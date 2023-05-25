@@ -1,7 +1,7 @@
 {
-  "name": "unnamed-script",
+  "name": "pu-course-parser",
   "version": "1.0.0",
-  "description": "An unnamed script.",
+  "description": "A parser for PU Course page.",
   "private": true,
   "license": "MIT",
   "author": {
