@@ -83,7 +83,7 @@ export type Course = {
   description: string | null;
   link: string | null;
   credit: number;
-  organizationId: number;
+  organizationId: number | null;
   dateRangeId: number;
 };
 
