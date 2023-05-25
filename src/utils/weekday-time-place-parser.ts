@@ -45,15 +45,19 @@ export function parseTimeAndPlace(
   input: string,
 ): Omit<WeekdayTimePlace, "weekday">[] {
   const [rawTimes, place] = input.split("：");
-  const times = rawTimes.trim().split("、");
+  const times = rawTimes.split("、");
 
-  return times.map(time => ({
-    time: convertTime(time),
-    place,
-  }));
+  return times
+    .map(time => ({
+      time: convertTime(time.trim()),
+      place,
+    }))
+    .filter(({ time }) => time !== null) as Omit<WeekdayTimePlace, "weekday">[];
 }
 
-function convertTime(time: string): TimePeriod {
+function convertTime(time: string): TimePeriod | null {
+  if (!time) return null;
+
   if (time === "午")
     return {
       start: "12:10",
