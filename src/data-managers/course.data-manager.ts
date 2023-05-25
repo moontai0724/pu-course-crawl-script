@@ -36,10 +36,12 @@ export function getAll(): typeof courses {
       ] = Array.from(element.querySelectorAll("td"));
 
       const code = codeElement.textContent?.trim() ?? "";
-      const [name, englishName] =
-        titleElement.textContent?.trim().split("\n") ?? "";
-      const description =
-        englishName + "\n" + noteElement.textContent?.trim() ?? "";
+      const { chinese: chineseName, english: englishName } =
+        getName(titleElement);
+      const description = [englishName, noteElement.textContent?.trim()]
+        .filter(Boolean)
+        .join("\n");
+
       const linkElement = titleElement.querySelector("a");
       const link = linkElement?.href.replace("../", "https://alcat.pu.edu.tw/");
       const credit = parseInt(creditElement.textContent?.trim() ?? "0", 10);
@@ -52,7 +54,7 @@ export function getAll(): typeof courses {
 
       const course: RawCourse = {
         code,
-        name,
+        name: chineseName,
         description,
         link: link ?? null,
         credit,
@@ -85,4 +87,23 @@ export function getAll(): typeof courses {
     });
 
   return courses;
+}
+
+function getName(titleElement: HTMLElement): {
+  chinese: string;
+  english: string;
+} {
+  const link = titleElement.querySelector("a");
+  if (!link) {
+    return {
+      chinese: titleElement.textContent?.trim() ?? "",
+      english: "",
+    };
+  }
+
+  const chinese = link.textContent?.trim() ?? "";
+  const english =
+    Array.from(titleElement.childNodes).pop()?.textContent?.trim() ?? "";
+
+  return { chinese, english };
 }
