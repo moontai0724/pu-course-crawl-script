@@ -38,7 +38,7 @@ enum WeekdayMap {
   "四" = "THURSDAY",
   "五" = "FRIDAY",
   "六" = "SATURDAY",
-  "七" = "SUNDAY",
+  "日" = "SUNDAY",
 }
 
 export function parseTimeAndPlace(
