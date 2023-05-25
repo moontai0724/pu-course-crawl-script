@@ -45,5 +45,5 @@ export function getByElement(element: Element) {
 }
 
 export function getByName(name: string) {
-  return getAll().find(tag => tag.name === name);
+  return tags.find(tag => tag.name === name);
 }

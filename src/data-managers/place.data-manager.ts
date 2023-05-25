@@ -54,5 +54,5 @@ export function getByElement(element: Element) {
 }
 
 export function getByName(name: string) {
-  return getAll().find(place => place.name === name);
+  return places.find(place => place.name === name);
 }

@@ -52,11 +52,11 @@ export function getByElement(element: HTMLElement | null) {
 }
 
 export function getByName(name: string) {
-  return getAll().find(teacher => teacher.name === name);
+  return people.find(teacher => teacher.name === name);
 }
 
 export function getByDescriptionAsId(descriptionAsId: string) {
-  return getAll().find(teacher => teacher.description === descriptionAsId);
+  return people.find(teacher => teacher.description === descriptionAsId);
 }
 
 export function getIdFromElement(element: HTMLLinkElement): string {
