@@ -1,9 +1,5 @@
+import { Organization, Type, Time, Place, Person } from "data-managers";
 import { Course } from "../_types/schema";
-import Organization from "./organization";
-import Person from "./person";
-import Place from "./place";
-import Time from "./time";
-import Type from "./type";
 
 type RawCourse = Omit<Course, "id" | "uuid"> & {
   relations: {
