@@ -1,4 +1,4 @@
-import { Organization, Type, Time, Place, Person } from "data-managers";
+import { Organization, Type, Time, Place, Person } from ".";
 import { Course } from "../_types/schema";
 
 type RawCourse = Omit<Course, "id" | "uuid"> & {
