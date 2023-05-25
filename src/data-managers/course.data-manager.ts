@@ -31,7 +31,7 @@ export function getAll(): typeof courses {
         noteElement,
       ] = Array.from(element.querySelectorAll("td"));
 
-      const code = codeElement.textContent?.trim() ?? "";
+      const code = codeElement.textContent?.trim() || "";
       const { chinese: chineseName, english: englishName } =
         getName(titleElement);
       const description = [englishName, noteElement.textContent?.trim()]
@@ -40,7 +40,7 @@ export function getAll(): typeof courses {
 
       const linkElement = titleElement.querySelector("a");
       const link = linkElement?.href.replace("../", "https://alcat.pu.edu.tw/");
-      const credit = parseInt(creditElement.textContent?.trim() ?? "0", 10);
+      const credit = parseInt(creditElement.textContent?.trim() || "0", 10);
 
       const organization = Organization.getByElement(organizationElement);
       const type = Type.getByElement(typeElement);
