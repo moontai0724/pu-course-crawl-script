@@ -1,7 +1,8 @@
 import { Place } from "../_types/schema";
+import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 import WeekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 
-export type RawPlace = Omit<Place, "id" | "uuid"> & {
+export type RawPlace = Omit<Place, "uuid"> & {
   courses: number[];
 };
 
@@ -9,6 +10,7 @@ const places: RawPlace[] = [];
 
 export default {
   getAll,
+  getByElement,
   getByName,
 };
 
@@ -21,24 +23,34 @@ export function getAll(): typeof places {
     return WeekdayTimePlaceParser.getPlaces(text);
   });
 
-  allPlaces.forEach((placeOfDay, id) => {
+  let counter = 1;
+
+  allPlaces.forEach((placeOfDay, courseId) => {
     placeOfDay.forEach(placeOfClass => {
       const existingPlace = getByName(placeOfClass);
       if (existingPlace) {
-        existingPlace.courses.push(id);
+        existingPlace.courses.push(courseId);
         return;
       }
 
       places.push({
+        id: counter++,
         name: placeOfClass,
         description: null,
         parentId: null,
-        courses: [id],
+        courses: [courseId],
       });
     });
   });
 
   return places;
+}
+
+export function getByElement(element: Element) {
+  const text = element.textContent?.trim() ?? "";
+  const wtp = weekdayTimePlaceParser.parseAll(text);
+  const place = wtp.map(wtp => wtp.place);
+  return place.map(place => getByName(place));
 }
 
 export function getByName(name: string) {

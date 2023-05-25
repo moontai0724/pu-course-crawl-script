@@ -1,6 +1,6 @@
 import { Person } from "_types/schema";
 
-export type RawPerson = Omit<Person, "id" | "uuid"> & {
+export type RawPerson = Omit<Person, "uuid"> & {
   courses: number[];
 };
 
@@ -8,15 +8,20 @@ const people: RawPerson[] = [];
 
 export default {
   getAll,
+  getByElement,
   getByName,
   getByDescriptionAsId,
+  getIdFromElement,
 };
 
 export function getAll(): typeof people {
   if (people.length) return people;
 
   const elements = document.querySelectorAll("table tr td:nth-child(7)");
-  Array.from(elements).forEach((element, id) => {
+
+  let counter = 1;
+
+  Array.from(elements).forEach((element, courseId) => {
     const linkElement = element.querySelector("a");
     const link = linkElement?.href.replace("../", "https://alcat.pu.edu.tw/");
     const name = element.textContent?.trim() ?? "";
@@ -24,19 +29,26 @@ export function getAll(): typeof people {
 
     const existingTeacher = getByDescriptionAsId(description ?? "");
     if (existingTeacher && existingTeacher.name === name) {
-      existingTeacher.courses.push(id);
+      existingTeacher.courses.push(courseId);
       return;
     }
 
     people.push({
+      id: counter++,
       name,
       description: description ?? null,
       link: link ?? null,
-      courses: [id],
+      courses: [courseId],
     });
   });
 
   return people;
+}
+
+export function getByElement(element: HTMLElement | null) {
+  if (!element) return null;
+  const id = getIdFromElement(element as HTMLLinkElement);
+  return getByDescriptionAsId(id);
 }
 
 export function getByName(name: string) {

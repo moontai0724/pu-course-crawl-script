@@ -1,6 +1,6 @@
 import { Tag } from "_types/schema";
 
-export type RawTag = Omit<Tag, "id" | "uuid"> & {
+export type RawTag = Omit<Tag, "uuid"> & {
   courses: number[];
 };
 
@@ -8,6 +8,7 @@ const tags: RawTag[] = [];
 
 export default {
   getAll,
+  getByElement,
   getByName,
 };
 
@@ -15,23 +16,32 @@ export function getAll(): typeof tags {
   if (tags.length) return tags;
 
   const elements = document.querySelectorAll("table tr td:nth-child(3)");
-  Array.from(elements).forEach((element, id) => {
+
+  let counter = 1;
+
+  Array.from(elements).forEach((element, courseId) => {
     const name = element.textContent?.trim() ?? "";
 
     const existingTag = getByName(name);
     if (existingTag) {
-      existingTag.courses.push(id);
+      existingTag.courses.push(courseId);
       return;
     }
 
     tags.push({
+      id: counter++,
       name,
       description: null,
-      courses: [id],
+      courses: [courseId],
     });
   });
 
   return tags;
+}
+
+export function getByElement(element: Element) {
+  const name = element.textContent?.trim() ?? "";
+  return getByName(name);
 }
 
 export function getByName(name: string) {
