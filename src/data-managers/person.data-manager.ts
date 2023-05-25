@@ -6,14 +6,6 @@ export type RawPerson = Omit<Person, "uuid"> & {
 
 const people: RawPerson[] = [];
 
-export default {
-  getAll,
-  getByElement,
-  getByName,
-  getByDescriptionAsId,
-  getIdFromElement,
-};
-
 export function getAll(): typeof people {
   if (people.length) return people;
 
@@ -61,4 +53,8 @@ export function getByDescriptionAsId(descriptionAsId: string) {
 
 export function getIdFromElement(element: HTMLLinkElement): string {
   return element?.href.split("?").pop() || '"';
+}
+
+export function getInputs() {
+  return people.map(({ courses, ...teacher }) => teacher);
 }

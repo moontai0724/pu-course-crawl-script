@@ -8,12 +8,6 @@ export type RawPlace = Omit<Place, "uuid"> & {
 
 const places: RawPlace[] = [];
 
-export default {
-  getAll,
-  getByElement,
-  getByName,
-};
-
 export function getAll(): typeof places {
   if (places.length) return places;
 
@@ -55,4 +49,19 @@ export function getByElement(element: Element) {
 
 export function getByName(name: string) {
   return places.find(place => place.name === name);
+}
+
+export function getInputs() {
+  return places.map(({ courses, parentId, ...place }) => {
+    if (parentId) {
+      return {
+        ...place,
+        parent: {
+          connect: { id: parentId },
+        },
+      };
+    }
+
+    return place;
+  });
 }

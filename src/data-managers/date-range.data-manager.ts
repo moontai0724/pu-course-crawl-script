@@ -17,3 +17,7 @@ export function getAll() {
 export function getOne(id: number) {
   return getAll().find(dateRange => dateRange.id === id);
 }
+
+export function getInputs() {
+  return dateRanges;
+}

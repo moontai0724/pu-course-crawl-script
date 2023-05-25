@@ -6,12 +6,6 @@ export type RawTag = Omit<Tag, "uuid"> & {
 
 const tags: RawTag[] = [];
 
-export default {
-  getAll,
-  getByElement,
-  getByName,
-};
-
 export function getAll(): typeof tags {
   if (tags.length) return tags;
 
@@ -46,4 +40,8 @@ export function getByElement(element: Element) {
 
 export function getByName(name: string) {
   return tags.find(tag => tag.name === name);
+}
+
+export function getInputs() {
+  return tags.map(({ courses, ...tag }) => tag);
 }

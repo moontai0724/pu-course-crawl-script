@@ -6,12 +6,6 @@ export type RawOrganization = Omit<Organization, "uuid"> & {
 
 const organizations: RawOrganization[] = [];
 
-export default {
-  getAll,
-  getByName,
-  getByElement,
-};
-
 export function getAll(): typeof organizations {
   if (organizations.length) return organizations;
 
@@ -47,4 +41,16 @@ export function getByElement(element: Element) {
 
 export function getByName(name: string) {
   return organizations.find(organization => organization.name === name);
+}
+
+export function getInputs() {
+  return organizations.map(({ courses, parentId, ...organization }) => {
+    if (parentId) {
+      return {
+        ...organization,
+        parent: organizations.find(({ id }) => id === parentId),
+      };
+    }
+    return organization;
+  });
 }

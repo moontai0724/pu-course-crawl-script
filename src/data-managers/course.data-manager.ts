@@ -12,17 +12,13 @@ type RawCourse = Omit<Course, "id" | "uuid"> & {
 
 const courses: RawCourse[] = [];
 
-export default {
-  getAll,
-};
-
 export function getAll(): typeof courses {
   if (courses.length) return courses;
 
   const elements = document.querySelectorAll("table tr");
   Array.from(elements)
     .slice(1)
-    .forEach((element, id) => {
+    .forEach(element => {
       const [
         codeElement,
         organizationElement,
@@ -106,4 +102,34 @@ function getName(titleElement: HTMLElement): {
     Array.from(titleElement.childNodes).pop()?.textContent?.trim() ?? "";
 
   return { chinese, english };
+}
+
+export function getInputs() {
+  return courses.map(course => {
+    const { relations, organizationId, dateRangeId, ...courseInput } = course;
+
+    const inputWithRelations = {
+      ...courseInput,
+      organization: {
+        connect: { id: organizationId },
+      },
+      dateRange: {
+        connect: { id: dateRangeId },
+      },
+      hosts: {
+        connect: relations.personIds.map(id => ({ id })),
+      },
+      places: {
+        connect: relations.placeIds.map(id => ({ id })),
+      },
+      tags: {
+        connect: relations.tagIds.map(id => ({ id })),
+      },
+      timeRanges: {
+        connect: relations.timeRangeIds.map(id => ({ id })),
+      },
+    };
+
+    return inputWithRelations;
+  });
 }

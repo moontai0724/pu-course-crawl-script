@@ -9,12 +9,6 @@ export type RawTime = Omit<TimeRange, "startTime" | "endTime"> & {
   courses: number[];
 };
 
-export default {
-  getAll,
-  getByElement,
-  getOne,
-};
-
 const times: RawTime[] = [];
 
 export function getAll(): typeof times {
@@ -68,4 +62,8 @@ export function getOne(
         time.endTime === (item.endTime || item.time?.end),
     ) ?? null
   );
+}
+
+export function getInputs() {
+  return times.map(({ courses, ...time }) => time);
 }
