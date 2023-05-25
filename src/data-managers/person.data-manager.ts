@@ -60,5 +60,5 @@ export function getByDescriptionAsId(descriptionAsId: string) {
 }
 
 export function getIdFromElement(element: HTMLLinkElement): string {
-  return element?.href.replace("../", "https://alcat.pu.edu.tw/");
+  return element?.href.split("?").pop() || '"';
 }
