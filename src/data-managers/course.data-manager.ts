@@ -31,7 +31,7 @@ export function getAll(): typeof courses {
       personElement,
       timeAndPlaceElement,
       noteElement,
-    ] = element.querySelectorAll("td");
+    ] = Array.from(element.querySelectorAll("td"));
 
     const code = codeElement.textContent?.trim() ?? "";
     const [name, englishName] =
