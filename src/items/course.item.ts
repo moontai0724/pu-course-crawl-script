@@ -12,7 +12,10 @@ export interface TCourseRelations {
   tagUUIDs: string[];
   personUUIDs: string[];
 }
-export type TCourse = TCourseBasic & TCourseRelations;
+export type TCourse = TCourseBasic & {
+  relations: TCourseRelations;
+  internalValues: TCourseInternalValues;
+};
 
 export interface TCourseInternalValues {
   organizationName?: string | null;
@@ -64,7 +67,7 @@ export default class CourseItem {
       code: this.basic.code,
       name: this.basic.name,
       credit: this.basic.credit,
-      organizationTitle: this.internalValues.organizationName,
+      organizationName: this.internalValues.organizationName,
       weekTimePlaces: this.internalValues.weekTimePlaces,
     };
 
