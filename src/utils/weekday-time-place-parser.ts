@@ -11,7 +11,7 @@ export interface TimePeriod {
   end: string;
 }
 
-export default { parseAll, parseDay, parseTimeAndPlace, getPlaces };
+export default { parseAll, getPlaces };
 
 export function parseAll(input: string): WeekdayTimePlace[] {
   const days = input.split("\n");
