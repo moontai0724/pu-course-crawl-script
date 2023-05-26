@@ -1,3 +1,4 @@
+import CourseItem from "./items/course.item";
 import {
   Course,
   DateRange,
@@ -8,13 +9,18 @@ import {
   Type,
 } from "./data-managers";
 
+const courseElements = document.querySelectorAll("table tr");
+Array.from(courseElements).forEach(courseElement => {
+  const course = new CourseItem(courseElement);
+  Course.add(course);
+});
+
 const rDateRange = DateRange.getAll();
 const rOrganization = Organization.getAll();
 const rPerson = Person.getAll();
 const rPlace = Place.getAll();
 const rTime = Time.getAll();
 const rType = Type.getAll();
-const rCourse = Course.getAll();
 
 GM_registerMenuCommand(
   "Downlaod All",
@@ -25,15 +31,15 @@ GM_registerMenuCommand(
     const oPlace = Place.getInputs();
     const oTime = Time.getInputs();
     const oType = Type.getInputs();
-    const oCourse = Course.getInputs();
+    const oCourse = Course.toInputData();
 
-    console.log("DateRange data", rDateRange, oDateRange);
-    console.log("Organization data", rOrganization, oOrganization);
-    console.log("Person data", rPerson, oPerson);
-    console.log("Place data", rPlace, oPlace);
-    console.log("Time data", rTime, oTime);
-    console.log("Type data", rType, oType);
-    console.log("Course data", rCourse, oCourse);
+    console.log("DateRange data", oDateRange);
+    console.log("Organization data", oOrganization);
+    console.log("Person data", oPerson);
+    console.log("Place data", oPlace);
+    console.log("Time data", oTime);
+    console.log("Type data", oType);
+    console.log("Course data", oCourse);
 
     download("courses.json", JSON.stringify(oCourse));
     download("dateRanges.json", JSON.stringify(oDateRange));
