@@ -1,4 +1,5 @@
 import { Person } from "_types/schema";
+import PersonParser from "../utils/person-parser";
 
 export type RawPerson = Omit<Person, "uuid"> & {
   courses: number[];
@@ -14,10 +15,7 @@ export function getAll(): typeof people {
   let counter = 1;
 
   Array.from(elements).forEach((element, courseId) => {
-    const linkElement = element.querySelector("a");
-    const link = linkElement?.href.replace("../", "https://alcat.pu.edu.tw/");
-    const name = element.textContent?.trim() ?? "";
-    const description = link?.split("?").pop();
+    const { link, name, description } = PersonParser.parse(element);
 
     const existingTeacher = getByDescriptionAsId(description ?? "");
     if (existingTeacher && existingTeacher.name === name) {
