@@ -16,29 +16,35 @@ const rTime = Time.getAll();
 const rType = Type.getAll();
 const rCourse = Course.getAll();
 
-const oDateRange = DateRange.getInputs();
-const oOrganization = Organization.getInputs();
-const oPerson = Person.getInputs();
-const oPlace = Place.getInputs();
-const oTime = Time.getInputs();
-const oType = Type.getInputs();
-const oCourse = Course.getInputs();
+GM_registerMenuCommand(
+  "Downlaod All",
+  function () {
+    const oDateRange = DateRange.getInputs();
+    const oOrganization = Organization.getInputs();
+    const oPerson = Person.getInputs();
+    const oPlace = Place.getInputs();
+    const oTime = Time.getInputs();
+    const oType = Type.getInputs();
+    const oCourse = Course.getInputs();
 
-console.log("courses data", rDateRange, oDateRange);
-console.log("dateRanges data", rOrganization, oOrganization);
-console.log("organizations data", rPerson, oPerson);
-console.log("persons data", rPlace, oPlace);
-console.log("places data", rTime, oTime);
-console.log("timeRanges data", rType, oType);
-console.log("types data", rCourse, oCourse);
+    console.log("DateRange data", rDateRange, oDateRange);
+    console.log("Organization data", rOrganization, oOrganization);
+    console.log("Person data", rPerson, oPerson);
+    console.log("Place data", rPlace, oPlace);
+    console.log("Time data", rTime, oTime);
+    console.log("Type data", rType, oType);
+    console.log("Course data", rCourse, oCourse);
 
-download("courses.json", JSON.stringify(oCourse));
-download("dateRanges.json", JSON.stringify(oDateRange));
-download("organizations.json", JSON.stringify(oOrganization));
-download("persons.json", JSON.stringify(oPerson));
-download("places.json", JSON.stringify(oPlace));
-download("timeRanges.json", JSON.stringify(oTime));
-download("types.json", JSON.stringify(oType));
+    download("courses.json", JSON.stringify(oCourse));
+    download("dateRanges.json", JSON.stringify(oDateRange));
+    download("organizations.json", JSON.stringify(oOrganization));
+    download("persons.json", JSON.stringify(oPerson));
+    download("places.json", JSON.stringify(oPlace));
+    download("timeRanges.json", JSON.stringify(oTime));
+    download("types.json", JSON.stringify(oType));
+  },
+  "a",
+);
 
 function download(filename: string, text: string) {
   const element = document.createElement("a");

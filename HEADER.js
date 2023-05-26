@@ -5,7 +5,7 @@
 // @description  A parser for PU Course page.
 // @author       moontai0724
 // @match        https://alcat.pu.edu.tw/2011courseAbstract/*
-// @grant        none
+// @grant        GM_registerMenuCommand
 // @supportURL   https://github.com/moontai0724/
 // @license      MIT
 // ==/UserScript==
