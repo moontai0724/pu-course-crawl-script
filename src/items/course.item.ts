@@ -1,6 +1,7 @@
 import { Course } from "_types/schema";
 import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 import { WeekdayTimePlace } from "../utils/weekday-time-place-parser";
+import personParser, { TPersonBasic } from "../utils/person-parser";
 
 export type TCourseBasic = Omit<Course, "id" | "organizationId">;
 export interface TCourseRelations {
@@ -16,7 +17,7 @@ export type TCourse = TCourseBasic & TCourseRelations;
 export interface TCourseInternalValues {
   organizationName?: string | null;
   typeName?: string | null;
-  personName?: string | null;
+  persons?: TPersonBasic[];
   weekTimePlaces?: WeekdayTimePlace[];
 }
 
@@ -52,7 +53,7 @@ export default class CourseItem {
     course.description = [english, note].filter(Boolean).join("\n");
     course.link = link;
     course.credit = this.parseCredit();
-    this.internalValues.personName = this.parsePersonName();
+    this.internalValues.persons = [this.parsePerson()];
     this.internalValues.weekTimePlaces = this.parseWeekTimePlaces();
 
     return course as TCourse;
@@ -133,9 +134,9 @@ export default class CourseItem {
     return element?.getAttribute("data-uuid") ?? "";
   }
 
-  private parsePersonName(): string {
-    const element = this.element.querySelector("td:nth-child(7)");
-    return element?.textContent?.trim() ?? "";
+  private parsePerson(): TPersonBasic {
+    const element = this.element?.querySelector("td:nth-child(7)");
+    return personParser.parse(element);
   }
 
   private parseWeekTimePlaces(): WeekdayTimePlace[] {
