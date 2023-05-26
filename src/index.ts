@@ -1,37 +1,39 @@
 import CourseItem from "./items/course.item";
 import {
-  Course,
-  DateRange,
-  Organization,
-  Person,
-  Place,
-  Time,
-  Type,
+  CourseDataManager,
+  DateRangeDataManager,
+  OrganizationDataManager,
+  PersonDataManager,
+  PlaceDataManager,
+  TimeDataManager,
+  TypeDataManager,
 } from "./data-managers";
 
 const courseElements = document.querySelectorAll("table tr");
-Array.from(courseElements).forEach(courseElement => {
-  const course = new CourseItem(courseElement);
-  Course.add(course);
-});
+Array.from(courseElements)
+  .slice(1)
+  .forEach(courseElement => {
+    const course = new CourseItem(courseElement);
+    CourseDataManager.add(course);
+  });
 
-const rDateRange = DateRange.getAll();
-const rOrganization = Organization.getAll();
-const rPerson = Person.getAll();
-const rPlace = Place.getAll();
-const rTime = Time.getAll();
-const rType = Type.getAll();
+const rDateRange = DateRangeDataManager.getAll();
+const rOrganization = OrganizationDataManager.getAll();
+const rPerson = PersonDataManager.getAll();
+const rPlace = PlaceDataManager.getAll();
+const rTime = TimeDataManager.getAll();
+const rType = TypeDataManager.getAll();
 
 GM_registerMenuCommand(
   "Downlaod All",
   function () {
-    const oDateRange = DateRange.getInputs();
-    const oOrganization = Organization.getInputs();
-    const oPerson = Person.getInputs();
-    const oPlace = Place.getInputs();
-    const oTime = Time.getInputs();
-    const oType = Type.getInputs();
-    const oCourse = Course.toInputData();
+    const oDateRange = DateRangeDataManager.getInputs();
+    const oOrganization = OrganizationDataManager.getInputs();
+    const oPerson = PersonDataManager.getInputs();
+    const oPlace = PlaceDataManager.getInputs();
+    const oTime = TimeDataManager.getInputs();
+    const oType = TypeDataManager.getInputs();
+    const oCourse = CourseDataManager.toInputData();
 
     console.log("DateRange data", oDateRange);
     console.log("Organization data", oOrganization);
