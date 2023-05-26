@@ -19,7 +19,7 @@ export function getAll(): typeof times {
   let counter = 1;
 
   Array.from(elements).forEach((element, courseId) => {
-    const text = element.textContent?.trim() ?? "";
+    const text = (element as HTMLElement).innerText?.trim() ?? "";
     const weekdayTimePlaces = WeekdayTimePlaceParser.parseAll(text);
 
     weekdayTimePlaces.forEach(wtp => {

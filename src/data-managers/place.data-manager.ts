@@ -13,7 +13,7 @@ export function getAll(): typeof places {
 
   const elements = document.querySelectorAll("table tr td:nth-child(8)");
   const allPlaces = Array.from(elements).map(element => {
-    const text = element.textContent?.trim() ?? "";
+    const text = (element as HTMLElement).innerText?.trim() ?? "";
     return WeekdayTimePlaceParser.getPlaces(text);
   });
 
