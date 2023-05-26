@@ -1,1 +1,1 @@
-# Unnamed Script
+# PU Course Parser Script

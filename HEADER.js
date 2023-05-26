@@ -6,6 +6,6 @@
 // @author       moontai0724
 // @match        https://alcat.pu.edu.tw/2011courseAbstract/*
 // @grant        GM_registerMenuCommand
-// @supportURL   https://github.com/moontai0724/
+// @supportURL   https://github.com/moontai0724/pu-course-crawl-script
 // @license      MIT
 // ==/UserScript==
