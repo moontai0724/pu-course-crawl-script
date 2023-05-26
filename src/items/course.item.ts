@@ -21,7 +21,7 @@ export interface TCourseInternalValues {
 }
 
 export default class CourseItem {
-  element: Element;
+  element: Element | null = null;
   basic: TCourseBasic;
   relations: TCourseRelations;
   internalValues: TCourseInternalValues = {};
@@ -35,7 +35,7 @@ export default class CourseItem {
 
   public setUUID(uuid: string): void {
     this.basic.uuid = uuid;
-    this.element.setAttribute("data-uuid", uuid);
+    this.element?.setAttribute("data-uuid", uuid);
   }
 
   private parseBasic(): TCourseBasic {
@@ -71,27 +71,27 @@ export default class CourseItem {
   }
 
   private parseCode(): string {
-    const element = this.element.querySelector("td:nth-child(1)");
+    const element = this.element?.querySelector("td:nth-child(1)");
     return element?.textContent?.trim() ?? "";
   }
 
   private parseOrganizationUUID(): string | null {
-    const element = this.element.querySelector("td:nth-child(2)");
+    const element = this.element?.querySelector("td:nth-child(2)");
     return element?.getAttribute("data-uuid") || null;
   }
 
   private parseOrganizationName(): string | null {
-    const element = this.element.querySelector("td:nth-child(2)");
+    const element = this.element?.querySelector("td:nth-child(2)");
     return element?.textContent?.trim() || null;
   }
 
   private parseTypeUUID(): string | null {
-    const element = this.element.querySelector("td:nth-child(3)");
+    const element = this.element?.querySelector("td:nth-child(3)");
     return element?.getAttribute("data-uuid") || null;
   }
 
   private parseTypeName(): string | null {
-    const element = this.element.querySelector("td:nth-child(3)");
+    const element = this.element?.querySelector("td:nth-child(3)");
     return element?.textContent?.trim() || null;
   }
 
@@ -100,7 +100,7 @@ export default class CourseItem {
     english: string | null;
     link: string | null;
   } {
-    const element = this.element.querySelector("td:nth-child(4)");
+    const element = this.element?.querySelector("td:nth-child(4)");
     if (!element) {
       console.error("Cannot find title element in: ", this.element);
       throw new Error("Cannot find title element");
@@ -124,12 +124,12 @@ export default class CourseItem {
   }
 
   private parseCredit(): number {
-    const element = this.element.querySelector("td:nth-child(6)");
+    const element = this.element?.querySelector("td:nth-child(6)");
     return parseInt(element?.textContent?.trim() || "0", 10);
   }
 
   private parsePersonUUID(): string {
-    const element = this.element.querySelector("td:nth-child(7)");
+    const element = this.element?.querySelector("td:nth-child(7)");
     return element?.getAttribute("data-uuid") ?? "";
   }
 
@@ -139,26 +139,26 @@ export default class CourseItem {
   }
 
   private parseWeekTimePlaces(): WeekdayTimePlace[] {
-    const element = this.element.querySelector("td:nth-child(8)");
+    const element = this.element?.querySelector("td:nth-child(8)");
     const text = (element as HTMLElement).innerText?.trim() || "";
     const weekTimePlaces = weekdayTimePlaceParser.parseAll(text);
     return weekTimePlaces;
   }
 
   private parseTimeRangeUUIDs(): string[] {
-    const element = this.element.querySelector("td:nth-child(8)");
+    const element = this.element?.querySelector("td:nth-child(8)");
     const uuids = element?.getAttribute("data-uuids-timeRange") || "";
     return uuids.split(",");
   }
 
   private parsePlaceUUIDs(): string[] {
-    const element = this.element.querySelector("td:nth-child(8)");
+    const element = this.element?.querySelector("td:nth-child(8)");
     const uuids = element?.getAttribute("data-uuids-place") || "";
     return uuids.split(",");
   }
 
   private parseNote(): string | null {
-    const element = this.element.querySelector("td:nth-child(9)");
+    const element = this.element?.querySelector("td:nth-child(9)");
     return element?.textContent?.trim() || null;
   }
 
