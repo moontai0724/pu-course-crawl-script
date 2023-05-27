@@ -1,7 +1,8 @@
 import { Course } from "_types/schema";
 import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 import { WeekdayTimePlace } from "../utils/weekday-time-place-parser";
-import personParser, { TPersonBasic } from "../utils/person-parser";
+import personParser from "../utils/person-parser";
+import PersonItem from "./person.item";
 
 export type TCourseBasic = Omit<Course, "id" | "organizationId">;
 export interface TCourseRelations {
@@ -20,7 +21,7 @@ export type TCourse = TCourseBasic & {
 export interface TCourseInternalValues {
   organizationName?: string | null;
   typeName?: string | null;
-  persons?: TPersonBasic[];
+  persons?: PersonItem[];
   weekTimePlaces?: WeekdayTimePlace[];
 }
 
@@ -30,11 +31,41 @@ export default class CourseItem {
   relations: TCourseRelations;
   internalValues: TCourseInternalValues = {};
 
-  constructor(trElement: Element) {
-    this.element = trElement;
-    this.basic = this.parseBasic();
-    this.relations = this.parseRelations();
-    this.setUUID(this.basic.uuid);
+  constructor(trElement: Element);
+  constructor(rawData: TCourse);
+  constructor(input: Element & TCourse) {
+    if (input instanceof Element) {
+      this.element = input;
+      this.basic = this.parseBasic();
+      this.relations = this.parseRelations();
+      this.setUUID(this.basic.uuid);
+    } else {
+      const { relations, internalValues, ...basic } = input as TCourse;
+      this.basic = basic;
+      this.relations = relations;
+      this.internalValues = internalValues;
+    }
+  }
+
+  public addPersonByElement(personElement: HTMLAnchorElement): void {
+    const person = new PersonItem(personElement);
+    this.internalValues.persons = this.internalValues.persons || [];
+    this.internalValues.persons.push(person);
+    this.relations.personUUIDs.push(person.basic.uuid);
+    const personContainer = this.element?.querySelector("td:nth-child(7)");
+    const element = person.element;
+    if (!personContainer || !element) return;
+    personContainer.appendChild(element);
+  }
+
+  public getData(): TCourse {
+    const data: TCourse = {
+      ...this.basic,
+      relations: this.relations,
+      internalValues: this.internalValues,
+    };
+
+    return data;
   }
 
   public setUUID(uuid: string): void {
@@ -46,7 +77,8 @@ export default class CourseItem {
     // eslint-disable-next-line prefer-const
     let course = {} as Partial<TCourse>;
 
-    course.uuid = crypto.randomUUID();
+    const existingUUID = this.element?.getAttribute("data-uuid");
+    course.uuid = existingUUID || crypto.randomUUID();
     course.code = this.parseCode();
     this.internalValues.organizationName = this.parseOrganizationName();
     this.internalValues.typeName = this.parseTypeName();
@@ -56,7 +88,8 @@ export default class CourseItem {
     course.description = [english, note].filter(Boolean).join("\n");
     course.link = link;
     course.credit = this.parseCredit();
-    this.internalValues.persons = [this.parsePerson()];
+    this.relations.personUUIDs = this.parsePersonUUIDs();
+    this.internalValues.persons = this.parsePerson();
     this.internalValues.weekTimePlaces = this.parseWeekTimePlaces();
 
     return course as TCourse;
@@ -132,14 +165,23 @@ export default class CourseItem {
     return parseInt(element?.textContent?.trim() || "0", 10);
   }
 
-  private parsePersonUUID(): string {
-    const element = this.element?.querySelector("td:nth-child(7)");
-    return element?.getAttribute("data-uuid") ?? "";
+  public getPersonElements(): HTMLAnchorElement[] {
+    if (!this.element) throw new Error("Cannot find element");
+
+    const elements = this.element.querySelectorAll("td:nth-child(7) a");
+    return Array.from(elements) as HTMLAnchorElement[];
   }
 
-  private parsePerson(): TPersonBasic {
+  private parsePersonUUIDs(): string[] {
+    const uuids = this.getPersonElements()
+      .map(a => a.getAttribute("data-uuid"))
+      .filter(Boolean) as string[];
+    return uuids;
+  }
+
+  private parsePerson(): PersonItem[] {
     const element = this.element?.querySelector("td:nth-child(7)");
-    return personParser.parse(element);
+    return personParser.parseAll(element);
   }
 
   private parseWeekTimePlaces(): WeekdayTimePlace[] {
@@ -152,13 +194,13 @@ export default class CourseItem {
   private parseTimeRangeUUIDs(): string[] {
     const element = this.element?.querySelector("td:nth-child(8)");
     const uuids = element?.getAttribute("data-uuids-timeRange") || "";
-    return uuids.split(",");
+    return uuids.split(",").filter(Boolean);
   }
 
   private parsePlaceUUIDs(): string[] {
     const element = this.element?.querySelector("td:nth-child(8)");
     const uuids = element?.getAttribute("data-uuids-place") || "";
-    return uuids.split(",");
+    return uuids.split(",").filter(Boolean);
   }
 
   private parseNote(): string | null {
@@ -179,8 +221,8 @@ export default class CourseItem {
     const type = this.parseTypeUUID();
     if (type) relations.tagUUIDs.push(type);
 
-    const host = this.parsePersonUUID();
-    if (host) relations.personUUIDs.push(host);
+    const host = this.parsePersonUUIDs();
+    if (host) relations.personUUIDs.push(...host);
 
     return relations;
   }
