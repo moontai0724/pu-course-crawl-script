@@ -20,7 +20,6 @@ Array.from(courseElements)
 const rDateRange = DateRangeDataManager.getAll();
 const rPlace = PlaceDataManager.getAll();
 const rTime = TimeDataManager.getAll();
-const rType = TypeDataManager.getAll();
 
 GM_registerMenuCommand(
   "Downlaod All",
@@ -30,7 +29,7 @@ GM_registerMenuCommand(
     const oPerson = PersonDataManager.toInputData();
     const oPlace = PlaceDataManager.getInputs();
     const oTime = TimeDataManager.getInputs();
-    const oType = TypeDataManager.getInputs();
+    const oType = TypeDataManager.toInputData();
     const oCourse = CourseDataManager.toInputData();
 
     console.log("DateRange data", oDateRange);

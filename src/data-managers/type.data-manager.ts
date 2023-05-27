@@ -1,47 +1,44 @@
-import { Tag } from "_types/schema";
+import TypeItem, { TType } from "../items/type.item";
 
-export type RawTag = Omit<Tag, "uuid"> & {
-  courses: number[];
-};
+const tags: TypeItem[] = [];
 
-const tags: RawTag[] = [];
+(function () {
+  const data = sessionStorage.getItem("types");
+  if (!data) return;
 
-export function getAll(): typeof tags {
-  if (tags.length) return tags;
-
-  const elements = document.querySelectorAll("table tr td:nth-child(3)");
-
-  let counter = 1;
-
-  Array.from(elements).forEach((element, courseId) => {
-    const name = element.textContent?.trim() ?? "";
-
-    const existingTag = getByName(name);
-    if (existingTag) {
-      existingTag.courses.push(courseId);
-      return;
-    }
-
-    tags.push({
-      id: counter++,
-      name,
-      description: null,
-      courses: [courseId],
-    });
+  const parsed = JSON.parse(data) as TType[];
+  parsed.forEach(item => {
+    tags.push(new TypeItem(item));
   });
+})();
 
-  return tags;
+function save() {
+  const data = tags.map(tag => tag.getData());
+  sessionStorage.setItem("types", JSON.stringify(data));
 }
 
-export function getByElement(element: Element) {
-  const name = element.textContent?.trim() ?? "";
-  return getByName(name);
+export function find(tag: TypeItem): TypeItem | undefined {
+  const hash = tag.getHash();
+  const existingTag = tags.find(item => item.getHash() === hash);
+
+  return existingTag;
 }
 
-export function getByName(name: string) {
-  return tags.find(tag => tag.name === name);
+export function add(tag: TypeItem) {
+  const existing = find(tag);
+  if (existing) {
+    tag.setUUID(existing.basic.uuid);
+    return;
+  }
+
+  tags.push(tag);
+  save();
 }
 
-export function getInputs() {
-  return tags.map(({ courses, ...tag }) => tag);
+export function getByUUID(uuid: string) {
+  return tags.find(tag => tag.basic.uuid === uuid);
+}
+
+export function toInputData() {
+  return tags.map(item => item.toInputData());
 }
