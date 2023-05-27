@@ -1,56 +1,48 @@
-import { Organization } from "_types/schema";
+import OrganizationItem, { TOrganization } from "../items/organization.item";
 
-export type RawOrganization = Omit<Organization, "uuid"> & {
-  courses: number[];
-};
+const organizations: OrganizationItem[] = [];
 
-const organizations: RawOrganization[] = [];
+(function () {
+  const data = sessionStorage.getItem("organizations");
+  if (!data) return;
 
-export function getAll(): typeof organizations {
-  if (organizations.length) return organizations;
-
-  const elements = document.querySelectorAll("table tr td:nth-child(2)");
-
-  let counter = 1;
-
-  Array.from(elements).forEach((element, courseId) => {
-    const name = element.textContent?.trim() ?? "";
-
-    const existingOrganization = getByName(name);
-    if (existingOrganization) {
-      existingOrganization.courses.push(courseId);
-      return;
-    }
-
-    organizations.push({
-      id: counter++,
-      name,
-      description: "",
-      courses: [courseId],
-      parentId: null,
-    });
+  const parsed = JSON.parse(data) as TOrganization[];
+  parsed.forEach(item => {
+    organizations.push(new OrganizationItem(item));
   });
+})();
 
-  return organizations;
+function save() {
+  const data = organizations.map(organization => organization.getData());
+  sessionStorage.setItem("organizations", JSON.stringify(data));
 }
 
-export function getByElement(element: Element) {
-  const name = element.textContent?.trim() ?? "";
-  return getByName(name);
+export function find(
+  organization: OrganizationItem,
+): OrganizationItem | undefined {
+  const hash = organization.getHash();
+  const existingOrganization = organizations.find(
+    item => item.getHash() === hash,
+  );
+
+  return existingOrganization;
 }
 
-export function getByName(name: string) {
-  return organizations.find(organization => organization.name === name);
+export function add(organization: OrganizationItem) {
+  const existing = find(organization);
+  if (existing) {
+    organization.setUUID(existing.basic.uuid);
+    return;
+  }
+
+  organizations.push(organization);
+  save();
 }
 
-export function getInputs() {
-  return organizations.map(({ courses, parentId, ...organization }) => {
-    if (parentId) {
-      return {
-        ...organization,
-        parent: organizations.find(({ id }) => id === parentId),
-      };
-    }
-    return organization;
-  });
+export function getByUUID(uuid: string) {
+  return organizations.find(organization => organization.basic.uuid === uuid);
+}
+
+export function toInputData() {
+  return organizations.map(item => item.toInputData());
 }

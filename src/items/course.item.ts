@@ -3,6 +3,7 @@ import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 import { WeekdayTimePlace } from "../utils/weekday-time-place-parser";
 import personParser from "../utils/person-parser";
 import PersonItem from "./person.item";
+import OrganizationItem from "./organization.item";
 
 export type TCourseBasic = Omit<Course, "id" | "organizationId">;
 export interface TCourseRelations {
@@ -19,7 +20,7 @@ export type TCourse = TCourseBasic & {
 };
 
 export interface TCourseInternalValues {
-  organizationName?: string | null;
+  organization?: OrganizationItem | null;
   typeName?: string | null;
   persons?: PersonItem[];
   weekTimePlaces?: WeekdayTimePlace[];
@@ -87,7 +88,7 @@ export default class CourseItem {
     const existingUUID = this.element?.getAttribute("data-uuid");
     course.uuid = existingUUID || crypto.randomUUID();
     course.code = this.parseCode();
-    this.internalValues.organizationName = this.parseOrganizationName();
+    this.internalValues.organization = this.parseOrganization();
     this.internalValues.typeName = this.parseTypeName();
     const { chinese, english, link } = this.parseName();
     const note = this.parseNote();
@@ -106,7 +107,7 @@ export default class CourseItem {
       code: this.basic.code,
       name: this.basic.name,
       credit: this.basic.credit,
-      organizationName: this.internalValues.organizationName,
+      organization: this.internalValues.organization,
       weekTimePlaces: this.internalValues.weekTimePlaces,
     };
 
@@ -118,14 +119,22 @@ export default class CourseItem {
     return element?.textContent?.trim() ?? "";
   }
 
-  private parseOrganizationUUID(): string | null {
+  private parseOrganization(): OrganizationItem | null {
     const element = this.element?.querySelector("td:nth-child(2)");
-    return element?.getAttribute("data-uuid") || null;
+    if (!element) return null;
+
+    const organization = new OrganizationItem(element);
+    return organization;
+  }
+
+  private parseOrganizationUUID(): string | null {
+    const organization = this.parseOrganization();
+    return organization?.basic.uuid || null;
   }
 
   private parseOrganizationName(): string | null {
-    const element = this.element?.querySelector("td:nth-child(2)");
-    return element?.textContent?.trim() || null;
+    const organization = this.parseOrganization();
+    return organization?.basic.name || null;
   }
 
   private parseTypeUUID(): string | null {

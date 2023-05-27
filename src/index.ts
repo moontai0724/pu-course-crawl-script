@@ -18,7 +18,6 @@ Array.from(courseElements)
   });
 
 const rDateRange = DateRangeDataManager.getAll();
-const rOrganization = OrganizationDataManager.getAll();
 const rPlace = PlaceDataManager.getAll();
 const rTime = TimeDataManager.getAll();
 const rType = TypeDataManager.getAll();
@@ -27,7 +26,7 @@ GM_registerMenuCommand(
   "Downlaod All",
   function () {
     const oDateRange = DateRangeDataManager.getInputs();
-    const oOrganization = OrganizationDataManager.getInputs();
+    const oOrganization = OrganizationDataManager.toInputData();
     const oPerson = PersonDataManager.toInputData();
     const oPlace = PlaceDataManager.getInputs();
     const oTime = TimeDataManager.getInputs();
