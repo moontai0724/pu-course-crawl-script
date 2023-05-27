@@ -3,9 +3,13 @@ import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 import { WeekdayTimePlace } from "../utils/weekday-time-place-parser";
 import personParser from "../utils/person-parser";
 import PersonItem, { TPerson } from "./person.item";
-import OrganizationItem from "./organization.item";
+import OrganizationItem, { TOrganization } from "./organization.item";
 import PlaceItem, { TPlace } from "./place.item";
-import { PlaceDataManager, TimeDataManager } from "../data-managers";
+import {
+  OrganizationDataManager,
+  PlaceDataManager,
+  TimeDataManager,
+} from "../data-managers";
 import TimeRangeItem, { TTimeRange } from "./time-range.item";
 import TagItem, { TTag } from "./tag.item";
 
@@ -25,7 +29,7 @@ export type TCourse = TCourseBasic & {
 };
 
 export interface TCourseInternalValues {
-  organization?: OrganizationItem | null;
+  organization?: OrganizationItem | TOrganization | null;
   typeName?: string | null;
   persons?: (PersonItem | TPerson)[];
   weekTimePlaces?: WeekdayTimePlace[];
@@ -125,7 +129,7 @@ export default class CourseItem {
       code: this.basic.code,
       name: this.basic.name,
       credit: this.basic.credit,
-      organization: this.internalValues.organization,
+      organization: this.relations.organizationUUID,
       weekTimePlaces: this.internalValues.weekTimePlaces,
     };
 
@@ -142,6 +146,7 @@ export default class CourseItem {
     if (!element) return null;
 
     const organization = new OrganizationItem(element);
+    OrganizationDataManager.add(organization);
     return organization;
   }
 
