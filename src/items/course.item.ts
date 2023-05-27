@@ -285,16 +285,16 @@ export default class CourseItem {
         connect: { uuid: this.relations.dateRangeUUID },
       },
       hosts: {
-        connect: this.relations.personUUIDs.map(id => ({ id })),
+        connect: this.relations.personUUIDs.map(uuid => ({ uuid })),
       },
       places: {
-        connect: this.relations.placeUUIDs.map(id => ({ id })),
+        connect: this.relations.placeUUIDs.map(uuid => ({ uuid })),
       },
       tags: {
-        connect: this.relations.tagUUIDs.map(id => ({ id })),
+        connect: this.relations.tagUUIDs.map(uuid => ({ uuid })),
       },
       timeRanges: {
-        connect: this.relations.timeRangeUUIDs.map(id => ({ id })),
+        connect: this.relations.timeRangeUUIDs.map(uuid => ({ uuid })),
       },
     };
 
