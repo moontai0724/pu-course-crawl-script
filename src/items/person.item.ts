@@ -22,7 +22,9 @@ export default class PersonItem {
       this.basic = this.parseBasic();
       this.setUUID(this.basic.uuid);
     } else {
-      this.basic = input as TPersonBasic;
+      const { internalValues, ...basic } = input as TPerson;
+      this.basic = basic;
+      this.intervalValues = internalValues;
     }
   }
 
