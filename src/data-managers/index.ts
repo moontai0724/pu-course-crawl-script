@@ -4,5 +4,4 @@ export * as OrganizationDataManager from "./organization.data-manager";
 export * as PersonDataManager from "./person.data-manager";
 export * as PlaceDataManager from "./place.data-manager";
 export * as TimeDataManager from "./time.data-manager";
-export * as TypeDataManager from "./type.data-manager";
 export * as TagDataManager from "./tag.data-manager";

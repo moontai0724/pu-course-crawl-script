@@ -6,7 +6,6 @@ import {
   PersonDataManager,
   PlaceDataManager,
   TimeDataManager,
-  TypeDataManager,
   TagDataManager,
 } from "./data-managers";
 import TagItem from "./items/tag.item";
@@ -19,7 +18,6 @@ GM_registerMenuCommand(
     const oPerson = PersonDataManager.toInputData();
     const oPlace = PlaceDataManager.toInputData();
     const oTime = TimeDataManager.toInputData();
-    const oType = TypeDataManager.toInputData();
     const oTag = TagDataManager.toInputData();
     const oCourse = CourseDataManager.toInputData();
 
@@ -28,7 +26,7 @@ GM_registerMenuCommand(
     console.log("Person data", oPerson);
     console.log("Place data", oPlace);
     console.log("Time data", oTime);
-    console.log("Tag data", [oType, oTag].flat());
+    console.log("Tag data", oTag);
     console.log("Course data", oCourse);
 
     download("courses.json", JSON.stringify(oCourse));
@@ -37,7 +35,7 @@ GM_registerMenuCommand(
     download("persons.json", JSON.stringify(oPerson));
     download("places.json", JSON.stringify(oPlace));
     download("timeRanges.json", JSON.stringify(oTime));
-    download("tags.json", JSON.stringify([oType, oTag].flat()));
+    download("tags.json", JSON.stringify(oTag));
   },
   "a",
 );

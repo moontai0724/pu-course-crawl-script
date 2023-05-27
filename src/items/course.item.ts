@@ -8,6 +8,7 @@ import PlaceItem, { TPlace } from "./place.item";
 import {
   OrganizationDataManager,
   PlaceDataManager,
+  TagDataManager,
   TimeDataManager,
 } from "../data-managers";
 import TimeRangeItem, { TTimeRange } from "./time-range.item";
@@ -19,7 +20,6 @@ export interface TCourseRelations {
   dateRangeUUID: string | null;
   timeRangeUUIDs: string[];
   placeUUIDs: string[];
-  typeUUIDs: string[];
   tagUUIDs: string[];
   personUUIDs: string[];
 }
@@ -46,7 +46,6 @@ export default class CourseItem {
     dateRangeUUID: null,
     timeRangeUUIDs: [],
     placeUUIDs: [],
-    typeUUIDs: [],
     tagUUIDs: [],
     personUUIDs: [],
   };
@@ -120,6 +119,8 @@ export default class CourseItem {
     this.internalValues.weekTimePlaces = this.parseWeekTimePlaces();
     this.internalValues.places = this.parsePlaces();
     this.internalValues.timeRanges = this.parseTimeRanges();
+    const type = this.parseType();
+    if (type) this.addTag(type);
 
     return course as TCourse;
   }
@@ -155,9 +156,12 @@ export default class CourseItem {
     return organization?.basic.uuid || null;
   }
 
-  private parseTypeUUID(): string | null {
-    const element = this.element?.querySelector("td:nth-child(3)");
-    return element?.getAttribute("data-uuid") || null;
+  private parseType(): TagItem | null {
+    const name = this.parseTypeName();
+    if (!name) return null;
+    const tag = new TagItem(name);
+    TagDataManager.add(tag);
+    return tag;
   }
 
   private parseTypeName(): string | null {
@@ -254,13 +258,12 @@ export default class CourseItem {
       dateRangeUUID: null,
       timeRangeUUIDs: this.parseTimeRangeUUIDs(),
       placeUUIDs: this.parsePlaceUUIDs(),
-      typeUUIDs: [],
       tagUUIDs: [],
       personUUIDs: [],
     };
 
-    const type = this.parseTypeUUID();
-    if (type) relations.typeUUIDs.push(type);
+    const type = this.parseType();
+    if (type) relations.tagUUIDs.push(type.basic.uuid);
 
     const host = this.parsePersonUUIDs();
     if (host) relations.personUUIDs.push(...host);
@@ -288,10 +291,7 @@ export default class CourseItem {
         connect: this.relations.placeUUIDs.map(id => ({ id })),
       },
       tags: {
-        connect: [
-          this.relations.typeUUIDs.map(id => ({ id })),
-          this.relations.tagUUIDs.map(id => ({ id })),
-        ].flat(),
+        connect: this.relations.tagUUIDs.map(id => ({ id })),
       },
       timeRanges: {
         connect: this.relations.timeRangeUUIDs.map(id => ({ id })),
