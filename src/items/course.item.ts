@@ -2,8 +2,10 @@ import { Course } from "_types/schema";
 import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 import { WeekdayTimePlace } from "../utils/weekday-time-place-parser";
 import personParser from "../utils/person-parser";
-import PersonItem from "./person.item";
+import PersonItem, { TPerson } from "./person.item";
 import OrganizationItem from "./organization.item";
+import PlaceItem, { TPlace } from "./place.item";
+import { PlaceDataManager } from "../data-managers";
 
 export type TCourseBasic = Omit<Course, "id" | "organizationId">;
 export interface TCourseRelations {
@@ -22,8 +24,9 @@ export type TCourse = TCourseBasic & {
 export interface TCourseInternalValues {
   organization?: OrganizationItem | null;
   typeName?: string | null;
-  persons?: PersonItem[];
+  persons?: (PersonItem | TPerson)[];
   weekTimePlaces?: WeekdayTimePlace[];
+  places?: (PlaceItem | TPlace)[];
 }
 
 export default class CourseItem {
@@ -98,6 +101,7 @@ export default class CourseItem {
     course.credit = this.parseCredit();
     this.internalValues.persons = this.parsePerson();
     this.internalValues.weekTimePlaces = this.parseWeekTimePlaces();
+    this.internalValues.places = this.parsePlaces();
 
     return course as TCourse;
   }
@@ -130,11 +134,6 @@ export default class CourseItem {
   private parseOrganizationUUID(): string | null {
     const organization = this.parseOrganization();
     return organization?.basic.uuid || null;
-  }
-
-  private parseOrganizationName(): string | null {
-    const organization = this.parseOrganization();
-    return organization?.basic.name || null;
   }
 
   private parseTypeUUID(): string | null {
@@ -209,10 +208,15 @@ export default class CourseItem {
     return uuids.split(",").filter(Boolean);
   }
 
-  private parsePlaceUUIDs(): string[] {
+  private parsePlaces(): PlaceItem[] {
     const element = this.element?.querySelector("td:nth-child(8)");
-    const uuids = element?.getAttribute("data-uuids-place") || "";
-    return uuids.split(",").filter(Boolean);
+    return PlaceDataManager.parse(element);
+  }
+
+  private parsePlaceUUIDs(): string[] {
+    const places = this.parsePlaces();
+    const uuids = places.map(place => place.basic.uuid);
+    return uuids;
   }
 
   private parseNote(): string | null {

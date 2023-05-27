@@ -1,67 +1,58 @@
-import { Place } from "../_types/schema";
+import PlaceItem, { TPlace } from "../items/place.item";
 import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
-import WeekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 
-export type RawPlace = Omit<Place, "uuid"> & {
-  courses: number[];
-};
+const places: PlaceItem[] = [];
 
-const places: RawPlace[] = [];
+(function () {
+  const data = sessionStorage.getItem("places");
+  if (!data) return;
 
-export function getAll(): typeof places {
-  if (places.length) return places;
-
-  const elements = document.querySelectorAll("table tr td:nth-child(8)");
-  const allPlaces = Array.from(elements).map(element => {
-    const text = (element as HTMLElement).innerText?.trim() ?? "";
-    return WeekdayTimePlaceParser.getPlaces(text);
+  const parsed = JSON.parse(data) as TPlace[];
+  parsed.forEach(item => {
+    add(new PlaceItem(item));
   });
+})();
 
-  let counter = 1;
+function save() {
+  const data = places.map(place => place.getData());
+  sessionStorage.setItem("places", JSON.stringify(data));
+}
 
-  allPlaces.forEach((placeOfDay, courseId) => {
-    placeOfDay.forEach(placeOfClass => {
-      const existingPlace = getByName(placeOfClass);
-      if (existingPlace) {
-        existingPlace.courses.push(courseId);
-        return;
-      }
+export function parse(tdElement?: Element | null): PlaceItem[] {
+  if (!tdElement) return [];
 
-      places.push({
-        id: counter++,
-        name: placeOfClass,
-        description: null,
-        parentId: null,
-        courses: [courseId],
-      });
-    });
+  const places: PlaceItem[] = [];
+
+  const text = (tdElement as HTMLElement).innerText || "";
+  const placeTexts = weekdayTimePlaceParser.getPlaces(text);
+
+  placeTexts.forEach(placeText => {
+    const place = new PlaceItem(placeText, tdElement);
+    add(place);
   });
 
   return places;
 }
 
-export function getByElement(element: Element) {
-  const text = element.textContent?.trim() ?? "";
-  const wtp = weekdayTimePlaceParser.parseAll(text);
-  const place = wtp.map(wtp => wtp.place);
-  return place.map(place => getByName(place));
+export function findExisting(place: PlaceItem) {
+  return places.find(item => item.getHash() === place.getHash());
 }
 
-export function getByName(name: string) {
-  return places.find(place => place.name === name);
+export function add(place: PlaceItem) {
+  const existing = findExisting(place);
+  if (existing) {
+    place.setUUID(existing.basic.uuid);
+    return;
+  }
+
+  places.push(place);
+  save();
 }
 
-export function getInputs() {
-  return places.map(({ courses, parentId, ...place }) => {
-    if (parentId) {
-      return {
-        ...place,
-        parent: {
-          connect: { id: parentId },
-        },
-      };
-    }
+export function getByUUID(uuid: string) {
+  return places.find(place => place.basic.uuid === uuid);
+}
 
-    return place;
-  });
+export function toInputData() {
+  return places.map(place => place.toInputData());
 }

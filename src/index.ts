@@ -18,7 +18,6 @@ Array.from(courseElements)
   });
 
 const rDateRange = DateRangeDataManager.getAll();
-const rPlace = PlaceDataManager.getAll();
 const rTime = TimeDataManager.getAll();
 
 GM_registerMenuCommand(
@@ -27,7 +26,7 @@ GM_registerMenuCommand(
     const oDateRange = DateRangeDataManager.getInputs();
     const oOrganization = OrganizationDataManager.toInputData();
     const oPerson = PersonDataManager.toInputData();
-    const oPlace = PlaceDataManager.getInputs();
+    const oPlace = PlaceDataManager.toInputData();
     const oTime = TimeDataManager.getInputs();
     const oType = TypeDataManager.toInputData();
     const oCourse = CourseDataManager.toInputData();

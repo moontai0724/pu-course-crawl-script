@@ -2,7 +2,7 @@ import CourseItem, { TCourse } from "../items/course.item";
 
 const courses: CourseItem[] = [];
 
-(function () {
+function load() {
   const data = sessionStorage.getItem("courses");
   if (!data) return;
 
@@ -10,7 +10,7 @@ const courses: CourseItem[] = [];
   parsed.forEach(item => {
     courses.push(new CourseItem(item));
   });
-})();
+}
 
 function save() {
   const data = courses.map(course => course.getData());
@@ -22,6 +22,7 @@ export function findExisting(course: CourseItem) {
 }
 
 export function add(course: CourseItem) {
+  if (courses.length === 0) load();
   const existing = findExisting(course);
   if (existing) {
     const persons = course.getPersonElements();
@@ -36,5 +37,6 @@ export function add(course: CourseItem) {
 }
 
 export function toInputData() {
+  if (courses.length === 0) load();
   return courses.map(course => course.toInputData());
 }
