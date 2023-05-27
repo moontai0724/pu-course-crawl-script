@@ -5,7 +5,8 @@ import personParser from "../utils/person-parser";
 import PersonItem, { TPerson } from "./person.item";
 import OrganizationItem from "./organization.item";
 import PlaceItem, { TPlace } from "./place.item";
-import { PlaceDataManager } from "../data-managers";
+import { PlaceDataManager, TimeDataManager } from "../data-managers";
+import TimeRangeItem, { TTimeRange } from "./time-range.item";
 
 export type TCourseBasic = Omit<Course, "id" | "organizationId">;
 export interface TCourseRelations {
@@ -27,6 +28,7 @@ export interface TCourseInternalValues {
   persons?: (PersonItem | TPerson)[];
   weekTimePlaces?: WeekdayTimePlace[];
   places?: (PlaceItem | TPlace)[];
+  timeRanges?: (TimeRangeItem | TTimeRange)[];
 }
 
 export default class CourseItem {
@@ -102,6 +104,7 @@ export default class CourseItem {
     this.internalValues.persons = this.parsePerson();
     this.internalValues.weekTimePlaces = this.parseWeekTimePlaces();
     this.internalValues.places = this.parsePlaces();
+    this.internalValues.timeRanges = this.parseTimeRanges();
 
     return course as TCourse;
   }
@@ -193,6 +196,11 @@ export default class CourseItem {
   private parsePerson(): PersonItem[] {
     const element = this.element?.querySelector("td:nth-child(7)");
     return personParser.parseAll(element);
+  }
+
+  private parseTimeRanges(): TimeRangeItem[] {
+    const element = this.element?.querySelector("td:nth-child(8)");
+    return TimeDataManager.parse(element);
   }
 
   private parseWeekTimePlaces(): WeekdayTimePlace[] {

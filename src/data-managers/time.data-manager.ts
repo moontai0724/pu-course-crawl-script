@@ -1,69 +1,54 @@
-import { TimeRange } from "../_types/schema";
-import WeekdayTimePlaceParser, {
-  WeekdayTimePlace,
-} from "../utils/weekday-time-place-parser";
+import TimeRangeItem, { TTimeRange } from "../items/time-range.item";
+import WeekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 
-export type RawTime = Omit<TimeRange, "startTime" | "endTime"> & {
-  startTime: string;
-  endTime: string;
-  courses: number[];
-};
+const times: TimeRangeItem[] = [];
 
-const times: RawTime[] = [];
+function load() {
+  const data = sessionStorage.getItem("times");
+  if (!data) return;
 
-export function getAll(): typeof times {
-  if (times.length) return times;
+  const parsed = JSON.parse(data) as TTimeRange[];
+  parsed.forEach(item => {
+    times.push(new TimeRangeItem(item));
+  });
+}
 
-  const elements = document.querySelectorAll("table tr td:nth-child(8)");
+function save() {
+  const data = times.map(time => time.getData());
+  sessionStorage.setItem("times", JSON.stringify(data));
+}
 
-  let counter = 1;
+export function parse(tdElement?: Element | null): TimeRangeItem[] {
+  if (!tdElement) return [];
 
-  Array.from(elements).forEach((element, courseId) => {
-    const text = (element as HTMLElement).innerText?.trim() ?? "";
-    const weekdayTimePlaces = WeekdayTimePlaceParser.parseAll(text);
+  const places: TimeRangeItem[] = [];
 
-    weekdayTimePlaces.forEach(wtp => {
-      const existing = getOne(wtp);
-      if (existing) {
-        if (!existing.courses.includes(courseId))
-          existing.courses.push(courseId);
-        return;
-      }
+  const text = (tdElement as HTMLElement).innerText || "";
+  const wtps = WeekdayTimePlaceParser.parseAll(text);
 
-      times.push({
-        id: counter++,
-        weekday: wtp.weekday,
-        startTime: wtp.time.start,
-        endTime: wtp.time.end,
-        courses: [courseId],
-      });
-    });
+  wtps.forEach(wtp => {
+    const place = new TimeRangeItem(wtp, tdElement);
+    add(place);
   });
 
-  return times;
+  return places;
 }
 
-export function getByElement(element: Element) {
-  const text = element.textContent?.trim() ?? "";
-  const weekdayTimePlaces = WeekdayTimePlaceParser.parseAll(text);
-  return weekdayTimePlaces.map(wtp => getOne(wtp));
+export function findExisting(time: TimeRangeItem) {
+  if (times.length === 0) load();
+  return times.find(item => item.getHash() === time.getHash());
 }
 
-export function getOne(item: RawTime): RawTime | null;
-export function getOne(item: WeekdayTimePlace): RawTime | null;
-export function getOne(
-  item: Partial<WeekdayTimePlace & RawTime>,
-): RawTime | null {
-  return (
-    times.find(
-      time =>
-        time.weekday === item.weekday &&
-        time.startTime === (item.startTime || item.time?.start) &&
-        time.endTime === (item.endTime || item.time?.end),
-    ) ?? null
-  );
+export function add(time: TimeRangeItem) {
+  if (times.length === 0) load();
+  const existing = findExisting(time);
+  if (existing) return;
+
+  times.push(time);
+  save();
 }
 
-export function getInputs() {
-  return times.map(({ courses, ...time }) => time);
+export function toInputData() {
+  if (times.length === 0) load();
+  return times.map(time => time.toInputData());
 }

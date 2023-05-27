@@ -17,9 +17,6 @@ Array.from(courseElements)
     CourseDataManager.add(course);
   });
 
-const rDateRange = DateRangeDataManager.getAll();
-const rTime = TimeDataManager.getAll();
-
 GM_registerMenuCommand(
   "Downlaod All",
   function () {
@@ -27,7 +24,7 @@ GM_registerMenuCommand(
     const oOrganization = OrganizationDataManager.toInputData();
     const oPerson = PersonDataManager.toInputData();
     const oPlace = PlaceDataManager.toInputData();
-    const oTime = TimeDataManager.getInputs();
+    const oTime = TimeDataManager.toInputData();
     const oType = TypeDataManager.toInputData();
     const oCourse = CourseDataManager.toInputData();
 
