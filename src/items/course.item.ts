@@ -43,7 +43,7 @@ export default class CourseItem {
   basic: TCourseBasic;
   relations: TCourseRelations = {
     organizationUUID: null,
-    dateRangeUUID: null,
+    dateRangeUUID: "1d2b127d-82a9-473f-bc87-d658fa00731a",
     timeRangeUUIDs: [],
     placeUUIDs: [],
     tagUUIDs: [],
@@ -255,7 +255,7 @@ export default class CourseItem {
   public parseRelations(): TCourseRelations {
     const relations: TCourseRelations = {
       organizationUUID: this.parseOrganizationUUID(),
-      dateRangeUUID: null,
+      dateRangeUUID: "1d2b127d-82a9-473f-bc87-d658fa00731a",
       timeRangeUUIDs: this.parseTimeRangeUUIDs(),
       placeUUIDs: this.parsePlaceUUIDs(),
       tagUUIDs: [],
