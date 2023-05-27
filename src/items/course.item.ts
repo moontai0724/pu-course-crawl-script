@@ -28,7 +28,14 @@ export interface TCourseInternalValues {
 export default class CourseItem {
   element: Element | null = null;
   basic: TCourseBasic;
-  relations: TCourseRelations;
+  relations: TCourseRelations = {
+    organizationUUID: null,
+    dateRangeUUID: null,
+    timeRangeUUIDs: [],
+    placeUUIDs: [],
+    tagUUIDs: [],
+    personUUIDs: [],
+  };
   internalValues: TCourseInternalValues = {};
 
   constructor(trElement: Element);
@@ -88,7 +95,6 @@ export default class CourseItem {
     course.description = [english, note].filter(Boolean).join("\n");
     course.link = link;
     course.credit = this.parseCredit();
-    this.relations.personUUIDs = this.parsePersonUUIDs();
     this.internalValues.persons = this.parsePerson();
     this.internalValues.weekTimePlaces = this.parseWeekTimePlaces();
 
@@ -173,10 +179,7 @@ export default class CourseItem {
   }
 
   private parsePersonUUIDs(): string[] {
-    const uuids = this.getPersonElements()
-      .map(a => a.getAttribute("data-uuid"))
-      .filter(Boolean) as string[];
-    return uuids;
+    return this.parsePerson().map(person => person.basic.uuid);
   }
 
   private parsePerson(): PersonItem[] {
