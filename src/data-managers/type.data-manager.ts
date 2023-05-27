@@ -1,6 +1,6 @@
 import TypeItem, { TType } from "../items/type.item";
 
-const tags: TypeItem[] = [];
+const types: TypeItem[] = [];
 
 (function () {
   const data = sessionStorage.getItem("types");
@@ -8,18 +8,18 @@ const tags: TypeItem[] = [];
 
   const parsed = JSON.parse(data) as TType[];
   parsed.forEach(item => {
-    tags.push(new TypeItem(item));
+    types.push(new TypeItem(item));
   });
 })();
 
 function save() {
-  const data = tags.map(tag => tag.getData());
+  const data = types.map(tag => tag.getData());
   sessionStorage.setItem("types", JSON.stringify(data));
 }
 
 export function find(tag: TypeItem): TypeItem | undefined {
   const hash = tag.getHash();
-  const existingTag = tags.find(item => item.getHash() === hash);
+  const existingTag = types.find(item => item.getHash() === hash);
 
   return existingTag;
 }
@@ -31,14 +31,14 @@ export function add(tag: TypeItem) {
     return;
   }
 
-  tags.push(tag);
+  types.push(tag);
   save();
 }
 
 export function getByUUID(uuid: string) {
-  return tags.find(tag => tag.basic.uuid === uuid);
+  return types.find(tag => tag.basic.uuid === uuid);
 }
 
 export function toInputData() {
-  return tags.map(item => item.toInputData());
+  return types.map(item => item.toInputData());
 }

@@ -7,13 +7,24 @@ import {
   PlaceDataManager,
   TimeDataManager,
   TypeDataManager,
+  TagDataManager,
 } from "./data-managers";
+import TagItem from "./items/tag.item";
+
+const selectedTagElement = document.querySelector(
+  "select[name=classattri] option[selected]",
+);
+const tag = selectedTagElement?.textContent
+  ? new TagItem(selectedTagElement?.textContent)
+  : null;
+if (tag) TagDataManager.add(tag);
 
 const courseElements = document.querySelectorAll("table tr");
 Array.from(courseElements)
   .slice(1)
   .forEach(courseElement => {
     const course = new CourseItem(courseElement);
+    if (tag) course.addTag(tag);
     CourseDataManager.add(course);
   });
 

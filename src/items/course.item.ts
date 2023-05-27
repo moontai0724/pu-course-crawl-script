@@ -7,6 +7,7 @@ import OrganizationItem from "./organization.item";
 import PlaceItem, { TPlace } from "./place.item";
 import { PlaceDataManager, TimeDataManager } from "../data-managers";
 import TimeRangeItem, { TTimeRange } from "./time-range.item";
+import TagItem, { TTag } from "./tag.item";
 
 export type TCourseBasic = Omit<Course, "id" | "organizationId">;
 export interface TCourseRelations {
@@ -14,6 +15,7 @@ export interface TCourseRelations {
   dateRangeUUID: string | null;
   timeRangeUUIDs: string[];
   placeUUIDs: string[];
+  typeUUIDs: string[];
   tagUUIDs: string[];
   personUUIDs: string[];
 }
@@ -29,6 +31,7 @@ export interface TCourseInternalValues {
   weekTimePlaces?: WeekdayTimePlace[];
   places?: (PlaceItem | TPlace)[];
   timeRanges?: (TimeRangeItem | TTimeRange)[];
+  tags?: (TagItem | TTag)[];
 }
 
 export default class CourseItem {
@@ -39,6 +42,7 @@ export default class CourseItem {
     dateRangeUUID: null,
     timeRangeUUIDs: [],
     placeUUIDs: [],
+    typeUUIDs: [],
     tagUUIDs: [],
     personUUIDs: [],
   };
@@ -58,6 +62,13 @@ export default class CourseItem {
       this.relations = relations;
       this.internalValues = internalValues;
     }
+  }
+
+  public addTag(tag: TagItem): void {
+    this.relations.tagUUIDs = this.relations.tagUUIDs || [];
+    this.relations.tagUUIDs.push(tag.basic.uuid);
+    this.internalValues.tags = this.internalValues.tags || [];
+    this.internalValues.tags.push(tag);
   }
 
   public addPersonByElement(personElement: HTMLAnchorElement): void {
@@ -238,12 +249,13 @@ export default class CourseItem {
       dateRangeUUID: null,
       timeRangeUUIDs: this.parseTimeRangeUUIDs(),
       placeUUIDs: this.parsePlaceUUIDs(),
+      typeUUIDs: [],
       tagUUIDs: [],
       personUUIDs: [],
     };
 
     const type = this.parseTypeUUID();
-    if (type) relations.tagUUIDs.push(type);
+    if (type) relations.typeUUIDs.push(type);
 
     const host = this.parsePersonUUIDs();
     if (host) relations.personUUIDs.push(...host);
@@ -271,7 +283,10 @@ export default class CourseItem {
         connect: this.relations.placeUUIDs.map(id => ({ id })),
       },
       tags: {
-        connect: this.relations.tagUUIDs.map(id => ({ id })),
+        connect: [
+          this.relations.typeUUIDs.map(id => ({ id })),
+          this.relations.tagUUIDs.map(id => ({ id })),
+        ].flat(),
       },
       timeRanges: {
         connect: this.relations.timeRangeUUIDs.map(id => ({ id })),
