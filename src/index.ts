@@ -20,6 +20,7 @@ GM_registerMenuCommand(
     const oPlace = PlaceDataManager.toInputData();
     const oTime = TimeDataManager.toInputData();
     const oType = TypeDataManager.toInputData();
+    const oTag = TagDataManager.toInputData();
     const oCourse = CourseDataManager.toInputData();
 
     console.log("DateRange data", oDateRange);
@@ -27,7 +28,7 @@ GM_registerMenuCommand(
     console.log("Person data", oPerson);
     console.log("Place data", oPlace);
     console.log("Time data", oTime);
-    console.log("Type data", oType);
+    console.log("Tag data", [oType, oTag].flat());
     console.log("Course data", oCourse);
 
     download("courses.json", JSON.stringify(oCourse));
@@ -36,7 +37,7 @@ GM_registerMenuCommand(
     download("persons.json", JSON.stringify(oPerson));
     download("places.json", JSON.stringify(oPlace));
     download("timeRanges.json", JSON.stringify(oTime));
-    download("types.json", JSON.stringify(oType));
+    download("tags.json", JSON.stringify([oType, oTag].flat()));
   },
   "a",
 );
@@ -73,3 +74,5 @@ Array.from(courseElements)
     if (tag) course.addTag(tag);
     CourseDataManager.add(course);
   });
+
+alert("Done");
