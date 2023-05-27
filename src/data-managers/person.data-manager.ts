@@ -15,20 +15,24 @@ export function getAll(): typeof people {
   let counter = 1;
 
   Array.from(elements).forEach((element, courseId) => {
-    const { link, name, description } = PersonParser.parse(element);
+    const parsedPeople = PersonParser.parseAll(element);
 
-    const existingTeacher = getByDescriptionAsId(description ?? "");
-    if (existingTeacher && existingTeacher.name === name) {
-      existingTeacher.courses.push(courseId);
-      return;
-    }
+    parsedPeople.forEach(person => {
+      const { link, name, description } = person.getData();
 
-    people.push({
-      id: counter++,
-      name,
-      description: description ?? null,
-      link: link ?? null,
-      courses: [courseId],
+      const existingTeacher = getByDescriptionAsId(description ?? "");
+      if (existingTeacher && existingTeacher.name === name) {
+        existingTeacher.courses.push(courseId);
+        return;
+      }
+
+      people.push({
+        id: counter++,
+        name,
+        description: description ?? null,
+        link: link ?? null,
+        courses: [courseId],
+      });
     });
   });
 

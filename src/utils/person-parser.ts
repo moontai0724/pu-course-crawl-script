@@ -1,20 +1,28 @@
-export default { parse };
+import PersonItem, { TPerson } from "../items/person.item";
 
-export function parse(tdElement?: Element | null): TPersonBasic {
-  const linkElement = tdElement?.querySelector("a");
-  const link = linkElement?.href.replace("../", "https://alcat.pu.edu.tw/");
-  const name = tdElement?.textContent?.trim() ?? "";
-  const description = link?.split("?").pop();
+export default { parseAll };
 
-  return {
-    name,
-    description: description ?? null,
-    link: link ?? null,
-  };
-}
+export function parseAll(tdElement?: Element | null): PersonItem[] {
+  const persons: PersonItem[] = [];
 
-export interface TPersonBasic {
-  name: string;
-  description: string | null;
-  link: string | null;
+  const aElements = tdElement?.querySelectorAll("a");
+  aElements?.forEach(aElement => {
+    const person = new PersonItem(aElement);
+    persons.push(person);
+  });
+
+  const textContent = tdElement?.textContent?.trim();
+  if (!persons.length && textContent && textContent != "") {
+    const person: TPerson = {
+      uuid: crypto.randomUUID(),
+      name: textContent,
+      description: null,
+      link: null,
+      internalValues: {},
+    };
+
+    persons.push(new PersonItem(person));
+  }
+
+  return persons;
 }
