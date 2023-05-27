@@ -1,3 +1,4 @@
+import { PersonDataManager } from "../data-managers";
 import PersonItem, { TPerson } from "../items/person.item";
 
 export default { parseAll };
@@ -8,6 +9,7 @@ export function parseAll(tdElement?: Element | null): PersonItem[] {
   const aElements = tdElement?.querySelectorAll("a");
   aElements?.forEach(aElement => {
     const person = new PersonItem(aElement);
+    PersonDataManager.add(person);
     persons.push(person);
   });
 
