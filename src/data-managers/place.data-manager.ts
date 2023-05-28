@@ -29,6 +29,7 @@ export function parse(tdElement?: Element | null): PlaceItem[] {
   placeTexts.forEach(placeText => {
     const place = new PlaceItem(placeText, tdElement);
     add(place);
+    places.push(place);
   });
 
   return places;
