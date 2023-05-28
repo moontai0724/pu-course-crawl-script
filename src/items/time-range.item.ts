@@ -5,9 +5,15 @@ export type TTimeRangeBasic = Omit<
   TimeRange,
   "id" | "startTime" | "endTime"
 > & {
+  id?: number;
   startTime: string;
   endTime: string;
 };
+
+export interface TTimeRangeInfo {
+  id: number;
+  hash: string;
+}
 
 export type TTimeRange = TTimeRangeBasic;
 
@@ -30,24 +36,36 @@ export default class TimeRangeItem {
     return this.basic;
   }
 
-  public getTimeRangeHashs(): string[] {
-    const rawExistingUUIDs = this.element?.getAttribute("data-times");
-    const existingUUIDs = JSON.parse(rawExistingUUIDs || "[]");
-
-    return existingUUIDs;
+  public setId(id: number) {
+    this.basic.id = id;
+    this.updateToElement(id);
   }
 
-  public setHash(): void {
-    const existings = this.getTimeRangeHashs();
-    const existingIndex = existings.findIndex(time => time === this.getHash());
+  public parseAllFromElement(): TTimeRangeInfo[] {
+    if (!this.element) return [];
 
-    if (existingIndex < 0) {
-      existings.push(this.getHash());
-      this.element?.setAttribute("data-times", JSON.stringify(existings));
-    }
+    const timeRangeInfos = this.element?.getAttribute("data-time-ranges");
+    const timeRangeInfosParsed = JSON.parse(timeRangeInfos || "[]");
 
-    existings[existingIndex] = this.getHash();
-    this.element?.setAttribute("data-times", JSON.stringify(existings));
+    return timeRangeInfosParsed;
+  }
+
+  public updateToElement(id: number): void {
+    const existing = this.parseAllFromElement();
+    let existingIndex = existing.findIndex(
+      info => info.hash === this.getHash(),
+    );
+
+    if (existingIndex < 0) existingIndex = existing.length;
+
+    existing[existingIndex] = { id, hash: this.getHash() };
+    this.saveToElement(existing);
+  }
+
+  public saveToElement(data: TTimeRangeInfo[]): void {
+    if (!this.element) return;
+
+    this.element.setAttribute("data-time-ranges", JSON.stringify(data));
   }
 
   private parseBasic(wtp: WeekdayTimePlace): TTimeRangeBasic {
@@ -67,7 +85,7 @@ export default class TimeRangeItem {
       endTime: this.basic.endTime,
     };
 
-    return JSON.stringify(identicalValues);
+    return `${identicalValues.weekday} ${identicalValues.startTime}-${identicalValues.endTime}`;
   }
 
   public toInputData() {

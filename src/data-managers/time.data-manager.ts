@@ -8,8 +8,9 @@ function load() {
   if (!data) return;
 
   const parsed = JSON.parse(data) as TTimeRange[];
-  parsed.forEach(item => {
-    times.push(new TimeRangeItem(item));
+  parsed.forEach((item, index) => {
+    const id = item.id ?? index;
+    times.push(new TimeRangeItem({ id, ...item }));
   });
 }
 
@@ -21,17 +22,19 @@ function save() {
 export function parse(tdElement?: Element | null): TimeRangeItem[] {
   if (!tdElement) return [];
 
-  const places: TimeRangeItem[] = [];
+  const parsed: TimeRangeItem[] = [];
 
-  const text = (tdElement as HTMLElement).innerText || "";
+  const text = (tdElement as HTMLElement).innerText?.trim() || "";
   const wtps = WeekdayTimePlaceParser.parseAll(text);
 
   wtps.forEach(wtp => {
-    const place = new TimeRangeItem(wtp, tdElement);
-    add(place);
+    const item = new TimeRangeItem(wtp, tdElement);
+    item.setId(times.length + 1);
+    add(item);
+    parsed.push(item);
   });
 
-  return places;
+  return parsed;
 }
 
 export function findExisting(time: TimeRangeItem) {
@@ -42,7 +45,10 @@ export function findExisting(time: TimeRangeItem) {
 export function add(time: TimeRangeItem) {
   if (times.length === 0) load();
   const existing = findExisting(time);
-  if (existing) return;
+  if (existing && existing.basic.id) {
+    time.setId(existing.basic.id);
+    return;
+  }
 
   times.push(time);
   save();
