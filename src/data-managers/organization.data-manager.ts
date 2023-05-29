@@ -3,18 +3,16 @@ import OrganizationItem, { TOrganization } from "../items/organization.item";
 const organizations: OrganizationItem[] = [];
 
 function load() {
-  const data = sessionStorage.getItem("organizations");
-  if (!data) return;
+  const data: TOrganization[] = GM_getValue("organizations", []);
 
-  const parsed = JSON.parse(data) as TOrganization[];
-  parsed.forEach(item => {
+  data.forEach(item => {
     organizations.push(new OrganizationItem(item));
   });
 }
 
 function save() {
   const data = organizations.map(organization => organization.getData());
-  sessionStorage.setItem("organizations", JSON.stringify(data));
+  GM_setValue("organizations", data);
 }
 
 export function find(

@@ -4,11 +4,9 @@ import WeekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 const times: TimeRangeItem[] = [];
 
 function load() {
-  const data = sessionStorage.getItem("times");
-  if (!data) return;
+  const data: TTimeRange[] = GM_getValue("times", []);
 
-  const parsed = JSON.parse(data) as TTimeRange[];
-  parsed.forEach((item, index) => {
+  data.forEach((item, index) => {
     const id = item.id ?? index;
     times.push(new TimeRangeItem({ id, ...item }));
   });
@@ -16,7 +14,7 @@ function load() {
 
 function save() {
   const data = times.map(time => time.getData());
-  sessionStorage.setItem("times", JSON.stringify(data));
+  GM_setValue("times", data);
 }
 
 export function parse(tdElement?: Element | null): TimeRangeItem[] {

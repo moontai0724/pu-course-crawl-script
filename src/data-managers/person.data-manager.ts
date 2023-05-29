@@ -3,18 +3,16 @@ import PersonItem, { TPerson } from "../items/person.item";
 const people: PersonItem[] = [];
 
 function load() {
-  const data = sessionStorage.getItem("people");
-  if (!data) return;
+  const data: TPerson[] = GM_getValue("people", []);
 
-  const parsed = JSON.parse(data) as TPerson[];
-  parsed.forEach(item => {
+  data.forEach(item => {
     people.push(new PersonItem(item));
   });
 }
 
 function save() {
   const data = people.map(person => person.getData());
-  sessionStorage.setItem("people", JSON.stringify(data));
+  GM_setValue("people", data);
 }
 
 export function findExisting(person: PersonItem) {

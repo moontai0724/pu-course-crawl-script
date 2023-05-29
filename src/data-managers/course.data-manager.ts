@@ -3,18 +3,16 @@ import CourseItem, { TCourse } from "../items/course.item";
 const courses: CourseItem[] = [];
 
 function load() {
-  const data = sessionStorage.getItem("courses");
-  if (!data) return;
+  const data: TCourse[] = GM_getValue("courses", []);
 
-  const parsed = JSON.parse(data) as TCourse[];
-  parsed.forEach(item => {
+  data.forEach(item => {
     courses.push(new CourseItem(item));
   });
 }
 
 function save() {
   const data = courses.map(course => course.getData());
-  sessionStorage.setItem("courses", JSON.stringify(data));
+  GM_setValue("courses", data);
 }
 
 export function findExisting(course: CourseItem) {

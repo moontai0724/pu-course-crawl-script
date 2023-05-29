@@ -4,18 +4,16 @@ import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 const places: PlaceItem[] = [];
 
 (function () {
-  const data = sessionStorage.getItem("places");
-  if (!data) return;
+  const data: TPlace[] = GM_getValue("places", []);
 
-  const parsed = JSON.parse(data) as TPlace[];
-  parsed.forEach(item => {
+  data.forEach(item => {
     add(new PlaceItem(item));
   });
 })();
 
 function save() {
   const data = places.map(place => place.getData());
-  sessionStorage.setItem("places", JSON.stringify(data));
+  GM_setValue("places", data);
 }
 
 export function parse(tdElement?: Element | null): PlaceItem[] {

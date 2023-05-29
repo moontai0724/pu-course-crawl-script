@@ -3,18 +3,16 @@ import TagItem, { TTag } from "../items/tag.item";
 const tags: TagItem[] = [];
 
 function load() {
-  const data = sessionStorage.getItem("tags");
-  if (!data) return;
+  const data: TTag[] = GM_getValue("tags", []);
 
-  const parsed = JSON.parse(data) as TTag[];
-  parsed.forEach(item => {
+  data.forEach(item => {
     tags.push(new TagItem(item));
   });
 }
 
 function save() {
   const data = tags.map(tag => tag.getData());
-  sessionStorage.setItem("tags", JSON.stringify(data));
+  GM_setValue("tags", data);
 }
 
 export function find(tag: TagItem): TagItem | undefined {
