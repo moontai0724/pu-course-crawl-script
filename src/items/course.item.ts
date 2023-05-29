@@ -2,53 +2,36 @@ import { Course } from "_types/schema";
 import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 import { WeekdayTimePlace } from "../utils/weekday-time-place-parser";
 import personParser from "../utils/person-parser";
-import PersonItem, { TPerson } from "./person.item";
-import OrganizationItem, { TOrganization } from "./organization.item";
-import PlaceItem, { TPlace } from "./place.item";
+import PersonItem from "./person.item";
+import OrganizationItem from "./organization.item";
+import PlaceItem from "./place.item";
 import {
   OrganizationDataManager,
   PlaceDataManager,
   TagDataManager,
   TimeDataManager,
 } from "../data-managers";
-import TimeRangeItem, { TTimeRange } from "./time-range.item";
-import TagItem, { TTag } from "./tag.item";
+import TimeRangeItem from "./time-range.item";
+import TagItem from "./tag.item";
 
 export type TCourseBasic = Omit<Course, "id" | "organizationId">;
-export interface TCourseRelations {
-  organizationUUID: string | null;
-  dateRangeUUID: string | null;
-  timeRangeIds: number[];
-  placeUUIDs: string[];
-  tagUUIDs: string[];
-  personUUIDs: string[];
-}
 export type TCourse = TCourseBasic & {
-  relations: TCourseRelations;
   internalValues: TCourseInternalValues;
 };
 
 export interface TCourseInternalValues {
-  organization?: OrganizationItem | TOrganization | null;
+  organization?: OrganizationItem | null;
   typeName?: string | null;
-  persons?: (PersonItem | TPerson)[];
+  persons?: PersonItem[];
   weekTimePlaces?: WeekdayTimePlace[];
-  places?: (PlaceItem | TPlace)[];
-  timeRanges?: (TimeRangeItem | TTimeRange)[];
-  tags?: (TagItem | TTag)[];
+  places?: PlaceItem[];
+  timeRanges?: TimeRangeItem[];
+  tags?: TagItem[];
 }
 
 export default class CourseItem {
   element: Element | null = null;
   basic: TCourseBasic;
-  relations: TCourseRelations = {
-    organizationUUID: null,
-    dateRangeUUID: "1d2b127d-82a9-473f-bc87-d658fa00731a",
-    timeRangeIds: [],
-    placeUUIDs: [],
-    tagUUIDs: [],
-    personUUIDs: [],
-  };
   internalValues: TCourseInternalValues = {};
 
   constructor(trElement: Element);
@@ -57,33 +40,25 @@ export default class CourseItem {
     if (input instanceof Element) {
       this.element = input;
       this.basic = this.parseBasic();
-      this.relations = this.parseRelations();
       this.setUUID(this.basic.uuid);
     } else {
-      const { relations, internalValues, ...basic } = input as TCourse;
+      const { internalValues, ...basic } = input as TCourse;
       this.basic = basic;
-      this.relations = relations;
       this.internalValues = internalValues;
     }
   }
 
   public addPlace(place: PlaceItem): void {
-    this.relations.placeUUIDs.push(place.basic.uuid);
     this.internalValues.places = this.internalValues.places || [];
     this.internalValues.places.push(place);
   }
 
   public addTimeRange(timeRange: TimeRangeItem): void {
-    this.relations.timeRangeIds = this.relations.timeRangeIds || [];
-    if (timeRange.basic.id)
-      this.relations.timeRangeIds.push(timeRange.basic.id);
     this.internalValues.timeRanges = this.internalValues.timeRanges || [];
     this.internalValues.timeRanges.push(timeRange);
   }
 
   public addTag(tag: TagItem): void {
-    this.relations.tagUUIDs = this.relations.tagUUIDs || [];
-    this.relations.tagUUIDs.push(tag.basic.uuid);
     this.internalValues.tags = this.internalValues.tags || [];
     this.internalValues.tags.push(tag);
   }
@@ -92,7 +67,6 @@ export default class CourseItem {
     const person = new PersonItem(personElement);
     this.internalValues.persons = this.internalValues.persons || [];
     this.internalValues.persons.push(person);
-    this.relations.personUUIDs.push(person.basic.uuid);
     const personContainer = this.element?.querySelector("td:nth-child(7)");
     const element = person.element;
     if (!personContainer || !element) return;
@@ -100,10 +74,21 @@ export default class CourseItem {
   }
 
   public getData(): TCourse {
+    const internalValues: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(this.internalValues)) {
+      if (value instanceof Array) {
+        internalValues[key] = value.map(({ element, ...item }) => item);
+      } else if (value instanceof Object) {
+        const { element, ...item } = value;
+        internalValues[key] = item;
+      } else {
+        internalValues[key] = value;
+      }
+    }
+
     const data: TCourse = {
       ...this.basic,
-      relations: this.relations,
-      internalValues: this.internalValues,
+      internalValues,
     };
 
     return data;
@@ -144,7 +129,7 @@ export default class CourseItem {
       code: this.basic.code,
       name: this.basic.name,
       credit: this.basic.credit,
-      organization: this.relations.organizationUUID,
+      organization: this.internalValues.organization?.basic.uuid,
       weekTimePlaces: this.internalValues.weekTimePlaces,
     };
 
@@ -163,11 +148,6 @@ export default class CourseItem {
     const organization = new OrganizationItem(element);
     OrganizationDataManager.add(organization);
     return organization;
-  }
-
-  private parseOrganizationUUID(): string | null {
-    const organization = this.parseOrganization();
-    return organization?.basic.uuid || null;
   }
 
   private parseType(): TagItem | null {
@@ -223,10 +203,6 @@ export default class CourseItem {
     return Array.from(elements) as HTMLAnchorElement[];
   }
 
-  private parsePersonUUIDs(): string[] {
-    return this.parsePerson().map(person => person.basic.uuid);
-  }
-
   private parsePerson(): PersonItem[] {
     const element = this.element?.querySelector("td:nth-child(7)");
     return personParser.parseAll(element);
@@ -244,22 +220,9 @@ export default class CourseItem {
     return weekTimePlaces;
   }
 
-  private parseTimeRangeIds(): number[] {
-    const timeRanges = this.parseTimeRanges();
-    return timeRanges
-      .map(timeRange => timeRange.basic.id)
-      .filter(Boolean) as number[];
-  }
-
   private parsePlaces(): PlaceItem[] {
     const element = this.element?.querySelector("td:nth-child(8)");
     return PlaceDataManager.parse(element);
-  }
-
-  private parsePlaceUUIDs(): string[] {
-    const places = this.parsePlaces();
-    const uuids = places.map(place => place.basic.uuid);
-    return uuids;
   }
 
   private parseNote(): string | null {
@@ -267,49 +230,34 @@ export default class CourseItem {
     return element?.textContent?.trim() || null;
   }
 
-  public parseRelations(): TCourseRelations {
-    const relations: TCourseRelations = {
-      organizationUUID: this.parseOrganizationUUID(),
-      dateRangeUUID: "1d2b127d-82a9-473f-bc87-d658fa00731a",
-      timeRangeIds: this.parseTimeRangeIds(),
-      placeUUIDs: this.parsePlaceUUIDs(),
-      tagUUIDs: [],
-      personUUIDs: [],
-    };
-
-    const type = this.parseType();
-    if (type) relations.tagUUIDs.push(type.basic.uuid);
-
-    const host = this.parsePersonUUIDs();
-    if (host) relations.personUUIDs.push(...host);
-
-    return relations;
-  }
-
-  public reloadRelations(): void {
-    this.relations = this.parseRelations();
-  }
-
   public toInputData() {
     const inputWithRelations = {
       ...this.basic,
       organization: {
-        connect: { uuid: this.relations.organizationUUID },
+        connect: { uuid: this.internalValues.organization?.basic.uuid },
       },
       dateRange: {
-        connect: { uuid: this.relations.dateRangeUUID },
+        connect: { uuid: "1d2b127d-82a9-473f-bc87-d658fa00731a" },
       },
       hosts: {
-        connect: this.relations.personUUIDs.map(uuid => ({ uuid })),
+        connect: this.internalValues.persons?.map(person => ({
+          uuid: person.basic.uuid,
+        })),
       },
       places: {
-        connect: this.relations.placeUUIDs.map(uuid => ({ uuid })),
+        connect: this.internalValues.places?.map(place => ({
+          uuid: place.basic.uuid,
+        })),
       },
       tags: {
-        connect: this.relations.tagUUIDs.map(uuid => ({ uuid })),
+        connect: this.internalValues.tags?.map(tag => ({
+          uuid: tag.basic.uuid,
+        })),
       },
       timeRanges: {
-        connect: this.relations.timeRangeIds.map(id => ({ id })),
+        connect: this.internalValues.timeRanges?.map(timeRange => ({
+          id: timeRange.basic.id,
+        })),
       },
     };
 
