@@ -231,35 +231,52 @@ export default class CourseItem {
   }
 
   public toInputData() {
-    const inputWithRelations = {
+    const inputWithRelations: TCourseBasic & {
+      [key: string]: any;
+    } = {
       ...this.basic,
-      organization: {
-        connect: { uuid: this.internalValues.organization?.basic.uuid },
-      },
+      organization: undefined,
       dateRange: {
         connect: { uuid: "1d2b127d-82a9-473f-bc87-d658fa00731a" },
       },
-      hosts: {
+      hosts: undefined,
+      places: undefined,
+      tags: undefined,
+      timeRanges: undefined,
+    };
+
+    if (this.internalValues.organization)
+      inputWithRelations.organization = {
+        connect: { uuid: this.internalValues.organization?.basic.uuid },
+      };
+
+    if (this.internalValues.persons?.length)
+      inputWithRelations.hosts = {
         connect: this.internalValues.persons?.map(person => ({
           uuid: person.basic.uuid,
         })),
-      },
-      places: {
+      };
+
+    if (this.internalValues.places?.length)
+      inputWithRelations.places = {
         connect: this.internalValues.places?.map(place => ({
           uuid: place.basic.uuid,
         })),
-      },
-      tags: {
+      };
+
+    if (this.internalValues.tags?.length)
+      inputWithRelations.tags = {
         connect: this.internalValues.tags?.map(tag => ({
           uuid: tag.basic.uuid,
         })),
-      },
-      timeRanges: {
+      };
+
+    if (this.internalValues.timeRanges?.length)
+      inputWithRelations.timeRanges = {
         connect: this.internalValues.timeRanges?.map(timeRange => ({
           id: timeRange.basic.id,
         })),
-      },
-    };
+      };
 
     return inputWithRelations;
   }
