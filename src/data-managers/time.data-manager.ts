@@ -18,7 +18,6 @@ function load() {
 
 function save() {
   const data = times.map(time => time.getData());
-  sessionStorage.removeItem("times");
   sessionStorage.setItem("times", JSON.stringify(data));
 }
 

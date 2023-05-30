@@ -17,7 +17,6 @@ function load() {
 
 function save() {
   const data = places.map(place => place.getData());
-  sessionStorage.removeItem("places");
   sessionStorage.setItem("places", JSON.stringify(data));
 }
 
@@ -47,7 +46,7 @@ export function add(place: PlaceItem, bypass = false): PlaceItem {
   if (existing) return existing;
 
   places.push(place);
-  save();
+  if (!bypass) save();
   return place;
 }
 

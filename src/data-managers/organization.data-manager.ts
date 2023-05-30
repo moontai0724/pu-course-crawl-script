@@ -16,7 +16,6 @@ function load() {
 
 function save() {
   const data = organizations.map(organization => organization.getData());
-  sessionStorage.removeItem("organizations");
   sessionStorage.setItem("organizations", JSON.stringify(data));
 }
 
@@ -41,7 +40,7 @@ export function add(
   }
 
   organizations.push(organization);
-  save();
+  if (!bypass) save();
   return organization;
 }
 

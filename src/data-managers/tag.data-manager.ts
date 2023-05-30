@@ -16,7 +16,6 @@ function load() {
 
 function save() {
   const data = tags.map(tag => tag.getData());
-  sessionStorage.removeItem("tags");
   sessionStorage.setItem("tags", JSON.stringify(data));
 }
 
@@ -33,7 +32,7 @@ export function add(tag: TagItem, bypass = false): TagItem {
   }
 
   tags.push(tag);
-  save();
+  if (!bypass) save();
   return tag;
 }
 

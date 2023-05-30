@@ -16,7 +16,6 @@ function load() {
 
 function save() {
   const data = people.map(person => person.getData());
-  sessionStorage.removeItem("people");
   sessionStorage.setItem("people", JSON.stringify(data));
 }
 
@@ -30,7 +29,7 @@ export function add(person: PersonItem, bypass = false): PersonItem {
   if (existing) return existing;
 
   people.push(person);
-  save();
+  if (!bypass) save();
   return person;
 }
 

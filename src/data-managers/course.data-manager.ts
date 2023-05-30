@@ -16,7 +16,6 @@ function load() {
 
 function save() {
   const data = courses.map(course => course.getData());
-  sessionStorage.removeItem("courses");
   sessionStorage.setItem("courses", JSON.stringify(data));
 }
 
@@ -30,7 +29,7 @@ export function add(course: CourseItem, bypass = false): CourseItem {
   if (existing) {
     const persons = course.internalValues.personIds ?? [];
     persons.forEach(person => existing.addPerson(person));
-    save();
+    if (!bypass) save();
     return existing;
   }
 
