@@ -4,6 +4,8 @@ import WeekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 const times: TimeRangeItem[] = [];
 
 function load() {
+  if (times.length) return;
+
   const data = sessionStorage.getItem("times");
   if (!data) return;
 
@@ -28,7 +30,7 @@ export function parse(tdElement?: Element | null): TimeRangeItem[] {
   const wtps = WeekdayTimePlaceParser.parseAll(text);
 
   wtps.forEach(wtp => {
-    const item = new TimeRangeItem(wtp, tdElement);
+    const item = new TimeRangeItem(wtp);
     item.setId(times.length + 1);
     add(item);
     parsed.push(item);

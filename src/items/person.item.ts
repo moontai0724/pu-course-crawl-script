@@ -10,7 +10,6 @@ export interface TPersonInternalValues {
 }
 
 export default class PersonItem {
-  element: HTMLAnchorElement | null = null;
   basic: TPersonBasic;
   intervalValues: TPersonInternalValues = {};
 
@@ -18,8 +17,7 @@ export default class PersonItem {
   constructor(rawData: TPerson);
   constructor(input: HTMLAnchorElement & TPerson) {
     if (input instanceof HTMLAnchorElement) {
-      this.element = input;
-      this.basic = this.parseBasic();
+      this.basic = this.parseBasic(input);
       this.setUUID(this.basic.uuid);
     } else {
       const { internalValues, ...basic } = input as TPerson;
@@ -39,33 +37,25 @@ export default class PersonItem {
 
   public setUUID(uuid: string): void {
     this.basic.uuid = uuid;
-    this.element?.setAttribute("data-uuid", uuid);
+    // this.element?.setAttribute("data-uuid", uuid);
   }
 
-  private parseBasic(): TPersonBasic {
+  private parseBasic(element: HTMLAnchorElement): TPersonBasic {
     // eslint-disable-next-line prefer-const
-    let course = {} as Partial<TPersonBasic>;
+    let course: TPersonBasic = {
+      uuid: crypto.randomUUID(),
+      name: element.textContent?.trim() ?? "",
+      description: null,
+      link: element.href?.replace("../", "https://alcat.pu.edu.tw/"),
+    };
 
-    const existingUUID = this.element?.getAttribute("data-uuid");
-    course.uuid = existingUUID || crypto.randomUUID();
+    this.intervalValues.personId = course.link?.split("?").pop();
 
-    const link = this.element?.href?.replace("../", "https://alcat.pu.edu.tw/");
-    const name = this.element?.textContent?.trim() ?? "";
-    course.name = name;
-    course.description = null;
-    course.link = link;
-    this.intervalValues.personId = link?.split("?").pop();
-
-    return course as TPersonBasic;
+    return course;
   }
 
   public getHash(): string {
-    const identicalValues = {
-      name: this.basic.name,
-      link: this.basic.link,
-    };
-
-    return JSON.stringify(identicalValues);
+    return `${this.basic.name} ${this.basic.link}`;
   }
 
   public toInputData() {

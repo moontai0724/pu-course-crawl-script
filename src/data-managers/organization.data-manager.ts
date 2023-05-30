@@ -3,6 +3,8 @@ import OrganizationItem, { TOrganization } from "../items/organization.item";
 const organizations: OrganizationItem[] = [];
 
 function load() {
+  if (organizations.length) return;
+
   const data = sessionStorage.getItem("organizations");
   if (!data) return;
 

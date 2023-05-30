@@ -4,6 +4,8 @@ import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
 const places: PlaceItem[] = [];
 
 (function () {
+  if (places.length) return;
+
   const data = sessionStorage.getItem("places");
   if (!data) return;
 
@@ -27,7 +29,7 @@ export function parse(tdElement?: Element | null): PlaceItem[] {
   const placeTexts = weekdayTimePlaceParser.getPlaces(text);
 
   placeTexts.forEach(placeText => {
-    const place = new PlaceItem(placeText, tdElement);
+    const place = new PlaceItem(placeText);
     add(place);
     places.push(place);
   });

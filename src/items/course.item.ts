@@ -14,7 +14,10 @@ import {
 import TimeRangeItem from "./time-range.item";
 import TagItem from "./tag.item";
 
-export type TCourseBasic = Omit<Course, "id" | "organizationId">;
+export type TCourseBasic = Omit<
+  Course,
+  "id" | "dateRangeId" | "organizationId"
+>;
 export type TCourse = TCourseBasic & {
   internalValues: TCourseInternalValues;
 };
@@ -30,7 +33,6 @@ export interface TCourseInternalValues {
 }
 
 export default class CourseItem {
-  element: Element | null = null;
   basic: TCourseBasic;
   internalValues: TCourseInternalValues = {};
 
@@ -38,8 +40,7 @@ export default class CourseItem {
   constructor(rawData: TCourse);
   constructor(input: Element & TCourse) {
     if (input instanceof Element) {
-      this.element = input;
-      this.basic = this.parseBasic();
+      this.basic = this.parseBasic(input);
       this.setUUID(this.basic.uuid);
     } else {
       const { internalValues, ...basic } = input as TCourse;
@@ -63,14 +64,9 @@ export default class CourseItem {
     this.internalValues.tags.push(tag);
   }
 
-  public addPersonByElement(personElement: HTMLAnchorElement): void {
-    const person = new PersonItem(personElement);
+  public addPerson(person: PersonItem): void {
     this.internalValues.persons = this.internalValues.persons || [];
     this.internalValues.persons.push(person);
-    const personContainer = this.element?.querySelector("td:nth-child(7)");
-    const element = person.element;
-    if (!personContainer || !element) return;
-    personContainer.appendChild(element);
   }
 
   public getData(): TCourse {
@@ -96,88 +92,92 @@ export default class CourseItem {
 
   public setUUID(uuid: string): void {
     this.basic.uuid = uuid;
-    this.element?.setAttribute("data-uuid", uuid);
   }
 
-  private parseBasic(): TCourseBasic {
+  private parseBasic(element: Element): TCourseBasic {
     // eslint-disable-next-line prefer-const
-    let course = {} as Partial<TCourse>;
+    let course: TCourseBasic = {
+      uuid: crypto.randomUUID(),
+      code: this.parseCode(element),
+      name: "",
+      description: "",
+      link: "",
+      credit: this.parseCredit(element),
+    };
 
-    const existingUUID = this.element?.getAttribute("data-uuid");
-    course.uuid = existingUUID || crypto.randomUUID();
-    course.code = this.parseCode();
-    this.internalValues.organization = this.parseOrganization();
-    this.internalValues.typeName = this.parseTypeName();
-    const { chinese, english, link } = this.parseName();
-    const note = this.parseNote();
+    const { chinese, english, link } = this.parseName(element);
+    const note = this.parseNote(element);
     course.name = chinese;
     course.description = [english, note].filter(Boolean).join("\n");
-    course.link = link;
-    course.credit = this.parseCredit();
-    this.internalValues.persons = this.parsePerson();
-    this.internalValues.weekTimePlaces = this.parseWeekTimePlaces();
-    this.internalValues.places = this.parsePlaces();
-    this.internalValues.timeRanges = this.parseTimeRanges();
-    const type = this.parseType();
+    course.link = link?.replace("../", "https://alcat.pu.edu.tw/") ?? null;
+
+    this.internalValues.organization = this.parseOrganization(element);
+    this.internalValues.typeName = this.parseTypeName(element);
+    this.internalValues.persons = this.parsePerson(element);
+    this.internalValues.weekTimePlaces = this.parseWeekTimePlaces(element);
+    this.internalValues.places = this.parsePlaces(element);
+    this.internalValues.timeRanges = this.parseTimeRanges(element);
+
+    const type = this.parseType(element);
     if (type) this.addTag(type);
 
-    return course as TCourse;
+    return course;
   }
 
   public getHash(): string {
-    const identicalValues = {
-      code: this.basic.code,
-      name: this.basic.name,
-      credit: this.basic.credit,
-      organization: this.internalValues.organization?.basic.uuid,
-      weekTimePlaces: this.internalValues.weekTimePlaces,
-    };
+    const identicalValues = [
+      this.basic.code,
+      this.basic.name,
+      this.basic.credit,
+      this.internalValues.organization?.basic.uuid,
+      this.internalValues.weekTimePlaces,
+    ];
 
-    return JSON.stringify(identicalValues);
+    return identicalValues.join(" ");
   }
 
-  private parseCode(): string {
-    const element = this.element?.querySelector("td:nth-child(1)");
-    return element?.textContent?.trim() ?? "";
+  private parseCode(element: Element): string {
+    const target = element.querySelector("td:nth-child(1)");
+    return target?.textContent?.trim() ?? "";
   }
 
-  private parseOrganization(): OrganizationItem | null {
-    const element = this.element?.querySelector("td:nth-child(2)");
-    if (!element) return null;
+  private parseOrganization(element: Element): OrganizationItem | null {
+    const target = element.querySelector("td:nth-child(2)");
+    if (!target) return null;
 
-    const organization = new OrganizationItem(element);
+    const organization = new OrganizationItem(target);
     OrganizationDataManager.add(organization);
     return organization;
   }
 
-  private parseType(): TagItem | null {
-    const name = this.parseTypeName();
+  private parseType(element: Element): TagItem | null {
+    const name = this.parseTypeName(element);
     if (!name) return null;
     const tag = new TagItem(name);
     TagDataManager.add(tag);
     return tag;
   }
 
-  private parseTypeName(): string | null {
-    const element = this.element?.querySelector("td:nth-child(3)");
-    return element?.textContent?.trim() || null;
+  private parseTypeName(element: Element): string | null {
+    const target = element.querySelector("td:nth-child(3)");
+    return target?.textContent?.trim() || null;
   }
 
-  private parseName(): {
+  private parseName(element: Element): {
     chinese: string;
     english: string | null;
     link: string | null;
   } {
-    const element = this.element?.querySelector("td:nth-child(4)");
-    if (!element) {
-      console.error("Cannot find title element in: ", this.element);
+    const target = element.querySelector("td:nth-child(4)");
+    if (!target) {
+      console.error("Cannot find title element in: ", element);
       throw new Error("Cannot find title element");
     }
 
-    const linkElement = element?.querySelector("a");
+    const linkElement = target?.querySelector("a");
     if (!linkElement) {
       return {
-        chinese: element?.textContent?.trim() ?? "",
+        chinese: target?.textContent?.trim() ?? "",
         english: null,
         link: null,
       };
@@ -185,49 +185,47 @@ export default class CourseItem {
 
     const chinese = linkElement.textContent?.trim() ?? "";
     const english =
-      Array.from(element.childNodes).pop()?.textContent?.trim() ?? null;
+      Array.from(target.childNodes).pop()?.textContent?.trim() ?? null;
     const link = linkElement.getAttribute("href") ?? null;
 
     return { chinese, english, link };
   }
 
-  private parseCredit(): number {
-    const element = this.element?.querySelector("td:nth-child(6)");
-    return parseInt(element?.textContent?.trim() || "0", 10);
+  private parseCredit(element: Element): number {
+    const target = element.querySelector("td:nth-child(6)");
+    return parseInt(target?.textContent?.trim() || "0", 10);
   }
 
-  public getPersonElements(): HTMLAnchorElement[] {
-    if (!this.element) throw new Error("Cannot find element");
-
-    const elements = this.element.querySelectorAll("td:nth-child(7) a");
+  public getPersonElements(element: Element): HTMLAnchorElement[] {
+    const elements = element.querySelectorAll("td:nth-child(7) a");
     return Array.from(elements) as HTMLAnchorElement[];
   }
 
-  private parsePerson(): PersonItem[] {
-    const element = this.element?.querySelector("td:nth-child(7)");
-    return personParser.parseAll(element);
+  private parsePerson(element: Element): PersonItem[] {
+    const target = element.querySelector("td:nth-child(7)");
+    return personParser.parseAll(target);
   }
 
-  private parseTimeRanges(): TimeRangeItem[] {
-    const element = this.element?.querySelector("td:nth-child(8)");
-    return TimeDataManager.parse(element);
+  private parseTimeRanges(element: Element): TimeRangeItem[] {
+    const target = element.querySelector("td:nth-child(8)");
+    return TimeDataManager.parse(target);
   }
 
-  private parseWeekTimePlaces(): WeekdayTimePlace[] {
-    const element = this.element?.querySelector("td:nth-child(8)");
-    const text = (element as HTMLElement).innerText?.trim() || "";
+  private parseWeekTimePlaces(element: Element): WeekdayTimePlace[] {
+    const target = element.querySelector("td:nth-child(8)");
+    const text = (target as HTMLElement).innerText?.trim() || "";
     const weekTimePlaces = weekdayTimePlaceParser.parseAll(text);
     return weekTimePlaces;
   }
 
-  private parsePlaces(): PlaceItem[] {
-    const element = this.element?.querySelector("td:nth-child(8)");
-    return PlaceDataManager.parse(element);
+  private parsePlaces(element: Element): PlaceItem[] {
+    const target = element.querySelector("td:nth-child(8)");
+    return PlaceDataManager.parse(target);
   }
 
-  private parseNote(): string | null {
-    const element = this.element?.querySelector("td:nth-child(9)");
-    return element?.textContent?.trim() || null;
+  private parseNote(element: Element): string | null {
+    const target = element.querySelector("td:nth-child(9)");
+    return target?.textContent?.trim() || null;
   }
 
   public toInputData() {

@@ -3,6 +3,8 @@ import PersonItem, { TPerson } from "../items/person.item";
 const people: PersonItem[] = [];
 
 function load() {
+  if (people.length) return;
+
   const data = sessionStorage.getItem("people");
   if (!data) return;
 

@@ -27,22 +27,16 @@ export default class TagItem {
 
   private parseBasic(text: string): TTagBasic {
     const basic: TTagBasic = {
-      uuid: "",
+      uuid: crypto.randomUUID(),
       name: text,
       description: null,
     };
-
-    basic.uuid = crypto.randomUUID();
 
     return basic;
   }
 
   public getHash(): string {
-    const identicalValues = {
-      name: this.basic.name,
-    };
-
-    return JSON.stringify(identicalValues);
+    return this.basic.name;
   }
 
   public toInputData() {

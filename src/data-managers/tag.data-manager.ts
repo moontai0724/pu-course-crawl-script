@@ -3,6 +3,8 @@ import TagItem, { TTag } from "../items/tag.item";
 const tags: TagItem[] = [];
 
 function load() {
+  if (tags.length) return;
+
   const data = sessionStorage.getItem("tags");
   if (!data) return;
 
