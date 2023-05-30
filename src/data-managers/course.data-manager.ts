@@ -10,31 +10,33 @@ function load() {
 
   const parsed = JSON.parse(data) as TCourse[];
   parsed.forEach(item => {
-    courses.push(new CourseItem(item));
+    add(new CourseItem(item), true);
   });
 }
 
 function save() {
   const data = courses.map(course => course.getData());
+  sessionStorage.removeItem("courses");
   sessionStorage.setItem("courses", JSON.stringify(data));
 }
 
-export function findExisting(course: CourseItem) {
+function find(course: CourseItem) {
   return courses.find(item => item.getHash() === course.getHash());
 }
 
-export function add(course: CourseItem) {
-  if (courses.length === 0) load();
-  const existing = findExisting(course);
+export function add(course: CourseItem, bypass = false): CourseItem {
+  if (!bypass && courses.length === 0) load();
+  const existing = find(course);
   if (existing) {
     const persons = course.internalValues.persons ?? [];
     persons.forEach(person => existing.addPerson(person));
     save();
-    return;
+    return existing;
   }
 
   courses.push(course);
   save();
+  return course;
 }
 
 export function toInputData() {

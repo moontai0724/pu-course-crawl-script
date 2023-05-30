@@ -10,33 +10,31 @@ function load() {
 
   const parsed = JSON.parse(data) as TTag[];
   parsed.forEach(item => {
-    tags.push(new TagItem(item));
+    add(new TagItem(item), true);
   });
 }
 
 function save() {
   const data = tags.map(tag => tag.getData());
+  sessionStorage.removeItem("tags");
   sessionStorage.setItem("tags", JSON.stringify(data));
 }
 
-export function find(tag: TagItem): TagItem | undefined {
-  if (tags.length === 0) load();
-  const hash = tag.getHash();
-  const existingTag = tags.find(item => item.getHash() === hash);
-
-  return existingTag;
+function find(tag: TagItem): TagItem | undefined {
+  return tags.find(item => item.getHash() === tag.getHash());
 }
 
-export function add(tag: TagItem) {
-  if (tags.length === 0) load();
+export function add(tag: TagItem, bypass = false): TagItem {
+  if (!bypass && tags.length === 0) load();
   const existing = find(tag);
   if (existing) {
     tag.setUUID(existing.basic.uuid);
-    return;
+    return existing;
   }
 
   tags.push(tag);
   save();
+  return tag;
 }
 
 export function getByUUID(uuid: string) {

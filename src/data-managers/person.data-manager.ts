@@ -10,27 +10,28 @@ function load() {
 
   const parsed = JSON.parse(data) as TPerson[];
   parsed.forEach(item => {
-    people.push(new PersonItem(item));
+    add(new PersonItem(item), true);
   });
 }
 
 function save() {
   const data = people.map(person => person.getData());
+  sessionStorage.removeItem("people");
   sessionStorage.setItem("people", JSON.stringify(data));
 }
 
-export function findExisting(person: PersonItem) {
-  if (people.length === 0) load();
+function find(person: PersonItem) {
   return people.find(item => item.getHash() === person.getHash());
 }
 
-export function add(person: PersonItem) {
-  if (people.length === 0) load();
-  const existing = findExisting(person);
-  if (existing) return;
+export function add(person: PersonItem, bypass = false): PersonItem {
+  if (!bypass && people.length === 0) load();
+  const existing = find(person);
+  if (existing) return existing;
 
   people.push(person);
   save();
+  return person;
 }
 
 export function getByUUID(uuid: string) {

@@ -8,14 +8,13 @@ export function parseAll(tdElement?: Element | null): PersonItem[] {
 
   const aElements = tdElement?.querySelectorAll("a");
   aElements?.forEach(aElement => {
-    const person = new PersonItem(aElement);
-    PersonDataManager.add(person);
+    const person = PersonDataManager.add(new PersonItem(aElement));
     persons.push(person);
   });
 
   const textContent = tdElement?.textContent?.trim();
   if (!persons.length && textContent && textContent != "") {
-    const person: TPerson = {
+    const rawPerson: TPerson = {
       uuid: crypto.randomUUID(),
       name: textContent,
       description: null,
@@ -23,7 +22,8 @@ export function parseAll(tdElement?: Element | null): PersonItem[] {
       internalValues: {},
     };
 
-    persons.push(new PersonItem(person));
+    const person = PersonDataManager.add(new PersonItem(rawPerson));
+    persons.push(person);
   }
 
   return persons;

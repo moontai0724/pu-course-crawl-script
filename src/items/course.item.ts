@@ -145,17 +145,13 @@ export default class CourseItem {
     const target = element.querySelector("td:nth-child(2)");
     if (!target) return null;
 
-    const organization = new OrganizationItem(target);
-    OrganizationDataManager.add(organization);
-    return organization;
+    return OrganizationDataManager.add(new OrganizationItem(target));
   }
 
   private parseType(element: Element): TagItem | null {
     const name = this.parseTypeName(element);
     if (!name) return null;
-    const tag = new TagItem(name);
-    TagDataManager.add(tag);
-    return tag;
+    return TagDataManager.add(new TagItem(name));
   }
 
   private parseTypeName(element: Element): string | null {

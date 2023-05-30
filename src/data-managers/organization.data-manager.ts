@@ -10,19 +10,17 @@ function load() {
 
   const parsed = JSON.parse(data) as TOrganization[];
   parsed.forEach(item => {
-    organizations.push(new OrganizationItem(item));
+    add(new OrganizationItem(item), true);
   });
 }
 
 function save() {
   const data = organizations.map(organization => organization.getData());
+  sessionStorage.removeItem("organizations");
   sessionStorage.setItem("organizations", JSON.stringify(data));
 }
 
-export function find(
-  organization: OrganizationItem,
-): OrganizationItem | undefined {
-  if (organizations.length === 0) load();
+function find(organization: OrganizationItem): OrganizationItem | undefined {
   const hash = organization.getHash();
   const existingOrganization = organizations.find(
     item => item.getHash() === hash,
@@ -31,16 +29,20 @@ export function find(
   return existingOrganization;
 }
 
-export function add(organization: OrganizationItem) {
-  if (organizations.length === 0) load();
+export function add(
+  organization: OrganizationItem,
+  bypass = false,
+): OrganizationItem {
+  if (!bypass && organizations.length === 0) load();
   const existing = find(organization);
   if (existing) {
     organization.setUUID(existing.basic.uuid);
-    return;
+    return existing;
   }
 
   organizations.push(organization);
   save();
+  return organization;
 }
 
 export function getByUUID(uuid: string) {

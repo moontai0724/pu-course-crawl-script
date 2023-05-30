@@ -18,6 +18,7 @@ function load() {
 
 function save() {
   const data = times.map(time => time.getData());
+  sessionStorage.removeItem("times");
   sessionStorage.setItem("times", JSON.stringify(data));
 }
 
@@ -32,28 +33,25 @@ export function parse(tdElement?: Element | null): TimeRangeItem[] {
   wtps.forEach(wtp => {
     const item = new TimeRangeItem(wtp);
     item.setId(times.length + 1);
-    add(item);
-    parsed.push(item);
+    const time = add(item);
+    parsed.push(time);
   });
 
   return parsed;
 }
 
-export function findExisting(time: TimeRangeItem) {
-  if (times.length === 0) load();
+function find(time: TimeRangeItem) {
   return times.find(item => item.getHash() === time.getHash());
 }
 
-export function add(time: TimeRangeItem) {
+export function add(time: TimeRangeItem): TimeRangeItem {
   if (times.length === 0) load();
-  const existing = findExisting(time);
-  if (existing && existing.basic.id) {
-    time.setId(existing.basic.id);
-    return;
-  }
+  const existing = find(time);
+  if (existing && existing.basic.id) return existing;
 
   times.push(time);
   save();
+  return time;
 }
 
 export function toInputData() {
