@@ -1,6 +1,4 @@
 import { Course } from "_types/schema";
-import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
-import { WeekdayTimePlace } from "../utils/weekday-time-place-parser";
 import personParser from "../utils/person-parser";
 import PersonItem from "./person.item";
 import OrganizationItem from "./organization.item";
@@ -23,13 +21,12 @@ export type TCourse = TCourseBasic & {
 };
 
 export interface TCourseInternalValues {
-  organization?: OrganizationItem | null;
+  organizationId?: string | null;
   typeName?: string | null;
-  persons?: PersonItem[];
-  weekTimePlaces?: WeekdayTimePlace[];
-  places?: PlaceItem[];
-  timeRanges?: TimeRangeItem[];
-  tags?: TagItem[];
+  personIds?: string[];
+  placeIds?: string[];
+  timeRangeIds?: number[];
+  tagIds?: string[];
 }
 
 export default class CourseItem {
@@ -49,24 +46,24 @@ export default class CourseItem {
     }
   }
 
-  public addPlace(place: PlaceItem): void {
-    this.internalValues.places = this.internalValues.places || [];
-    this.internalValues.places.push(place);
+  public addPlace(placeId: string): void {
+    this.internalValues.placeIds = this.internalValues.placeIds || [];
+    this.internalValues.placeIds.push(placeId);
   }
 
-  public addTimeRange(timeRange: TimeRangeItem): void {
-    this.internalValues.timeRanges = this.internalValues.timeRanges || [];
-    this.internalValues.timeRanges.push(timeRange);
+  public addTimeRange(timeRangeId: number): void {
+    this.internalValues.timeRangeIds = this.internalValues.timeRangeIds || [];
+    this.internalValues.timeRangeIds.push(timeRangeId);
   }
 
-  public addTag(tag: TagItem): void {
-    this.internalValues.tags = this.internalValues.tags || [];
-    this.internalValues.tags.push(tag);
+  public addTag(tagId: string): void {
+    this.internalValues.tagIds = this.internalValues.tagIds || [];
+    this.internalValues.tagIds.push(tagId);
   }
 
-  public addPerson(person: PersonItem): void {
-    this.internalValues.persons = this.internalValues.persons || [];
-    this.internalValues.persons.push(person);
+  public addPerson(personId: string): void {
+    this.internalValues.personIds = this.internalValues.personIds || [];
+    this.internalValues.personIds.push(personId);
   }
 
   public getData(): TCourse {
@@ -111,15 +108,21 @@ export default class CourseItem {
     course.description = [english, note].filter(Boolean).join("\n");
     course.link = link?.replace("../", "https://alcat.pu.edu.tw/") ?? null;
 
-    this.internalValues.organization = this.parseOrganization(element);
     this.internalValues.typeName = this.parseTypeName(element);
-    this.internalValues.persons = this.parsePerson(element);
-    this.internalValues.weekTimePlaces = this.parseWeekTimePlaces(element);
-    this.internalValues.places = this.parsePlaces(element);
-    this.internalValues.timeRanges = this.parseTimeRanges(element);
+    this.internalValues.organizationId =
+      this.parseOrganization(element)?.basic.uuid;
+    this.internalValues.personIds = this.parsePerson(element).map(
+      person => person.basic.uuid,
+    );
+    this.internalValues.placeIds = this.parsePlaces(element).map(
+      place => place.basic.uuid,
+    );
+    this.internalValues.timeRangeIds = this.parseTimeRanges(element)
+      .map(timeRange => timeRange.basic.id)
+      .filter(Boolean) as number[];
 
     const type = this.parseType(element);
-    if (type) this.addTag(type);
+    if (type) this.addTag(type.basic.uuid);
 
     return course;
   }
@@ -129,8 +132,9 @@ export default class CourseItem {
       this.basic.code,
       this.basic.name,
       this.basic.credit,
-      this.internalValues.organization?.basic.uuid,
-      this.internalValues.weekTimePlaces,
+      this.internalValues.organizationId,
+      this.internalValues.timeRangeIds?.join(","),
+      this.internalValues.placeIds?.join(","),
     ];
 
     return identicalValues.join(" ");
@@ -207,13 +211,6 @@ export default class CourseItem {
     return TimeDataManager.parse(target);
   }
 
-  private parseWeekTimePlaces(element: Element): WeekdayTimePlace[] {
-    const target = element.querySelector("td:nth-child(8)");
-    const text = (target as HTMLElement).innerText?.trim() || "";
-    const weekTimePlaces = weekdayTimePlaceParser.parseAll(text);
-    return weekTimePlaces;
-  }
-
   private parsePlaces(element: Element): PlaceItem[] {
     const target = element.querySelector("td:nth-child(8)");
     return PlaceDataManager.parse(target);
@@ -239,37 +236,29 @@ export default class CourseItem {
       timeRanges: undefined,
     };
 
-    if (this.internalValues.organization)
+    if (this.internalValues.organizationId)
       inputWithRelations.organization = {
-        connect: { uuid: this.internalValues.organization?.basic.uuid },
+        connect: { uuid: this.internalValues.organizationId },
       };
 
-    if (this.internalValues.persons?.length)
+    if (this.internalValues.personIds?.length)
       inputWithRelations.hosts = {
-        connect: this.internalValues.persons?.map(person => ({
-          uuid: person.basic.uuid,
-        })),
+        connect: this.internalValues.personIds,
       };
 
-    if (this.internalValues.places?.length)
+    if (this.internalValues.placeIds?.length)
       inputWithRelations.places = {
-        connect: this.internalValues.places?.map(place => ({
-          uuid: place.basic.uuid,
-        })),
+        connect: this.internalValues.placeIds,
       };
 
-    if (this.internalValues.tags?.length)
+    if (this.internalValues.tagIds?.length)
       inputWithRelations.tags = {
-        connect: this.internalValues.tags?.map(tag => ({
-          uuid: tag.basic.uuid,
-        })),
+        connect: this.internalValues.tagIds,
       };
 
-    if (this.internalValues.timeRanges?.length)
+    if (this.internalValues.timeRangeIds?.length)
       inputWithRelations.timeRanges = {
-        connect: this.internalValues.timeRanges?.map(timeRange => ({
-          id: timeRange.basic.id,
-        })),
+        connect: this.internalValues.timeRangeIds,
       };
 
     return inputWithRelations;

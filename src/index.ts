@@ -69,7 +69,7 @@ Array.from(courseElements)
   .slice(1)
   .forEach(courseElement => {
     const course = new CourseItem(courseElement);
-    if (tag) course.addTag(tag);
+    if (tag) course.addTag(tag.basic.uuid);
     CourseDataManager.add(course);
   });
 

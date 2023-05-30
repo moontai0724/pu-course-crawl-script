@@ -28,7 +28,7 @@ export function add(course: CourseItem, bypass = false): CourseItem {
   if (!bypass && courses.length === 0) load();
   const existing = find(course);
   if (existing) {
-    const persons = course.internalValues.persons ?? [];
+    const persons = course.internalValues.personIds ?? [];
     persons.forEach(person => existing.addPerson(person));
     save();
     return existing;
