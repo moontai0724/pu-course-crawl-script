@@ -6,12 +6,12 @@ import * as Path from "path";
 
 const times: TimeRangeItem[] = [];
 
-function loadCache() {
+export function loadFile() {
   if (times.length) return;
 
-  const path = Path.resolve(__dirname, "./cache/times.json");
+  const path = Path.resolve(__dirname, "../cache/times.json");
+  if (!FileSystem.existsSync(path)) return;
   const data = FileSystem.readFileSync(path, "utf-8");
-  if (!data) return;
 
   const parsed = JSON.parse(data) as TTimeRange[];
   parsed.forEach((item, index) => {
@@ -20,9 +20,9 @@ function loadCache() {
   });
 }
 
-function saveCache() {
+export function saveFile() {
   const data = times.map(time => time.getData());
-  const path = Path.resolve(__dirname, "./cache/times.json");
+  const path = Path.resolve(__dirname, "../cache/times.json");
   FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
@@ -49,16 +49,15 @@ function find(time: TimeRangeItem) {
 }
 
 export function add(time: TimeRangeItem): TimeRangeItem {
-  if (times.length === 0) loadCache();
+  if (times.length === 0) loadFile();
   const existing = find(time);
   if (existing && existing.basic.id) return existing;
 
   times.push(time);
-  saveCache();
   return time;
 }
 
 export function toInputData() {
-  if (times.length === 0) loadCache();
+  if (times.length === 0) loadFile();
   return times.map(time => time.toInputData());
 }

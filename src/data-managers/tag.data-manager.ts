@@ -4,12 +4,12 @@ import * as Path from "path";
 
 const tags: TagItem[] = [];
 
-function load() {
+export function loadFile() {
   if (tags.length) return;
 
-  const path = Path.resolve(__dirname, "./cache/tags.json");
+  const path = Path.resolve(__dirname, "../cache/tags.json");
+  if (!FileSystem.existsSync(path)) return;
   const data = FileSystem.readFileSync(path, "utf-8");
-  if (!data) return;
 
   const parsed = JSON.parse(data) as TTag[];
   parsed.forEach(item => {
@@ -17,9 +17,9 @@ function load() {
   });
 }
 
-function save() {
+export function saveFile() {
   const data = tags.map(tag => tag.getData());
-  const path = Path.resolve(__dirname, "./cache/tags.json");
+  const path = Path.resolve(__dirname, "../cache/tags.json");
   FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
@@ -28,7 +28,7 @@ function find(tag: TagItem): TagItem | undefined {
 }
 
 export function add(tag: TagItem, bypass = false): TagItem {
-  if (!bypass && tags.length === 0) load();
+  if (!bypass && tags.length === 0) loadFile();
   const existing = find(tag);
   if (existing) {
     tag.setUUID(existing.basic.uuid);
@@ -36,16 +36,15 @@ export function add(tag: TagItem, bypass = false): TagItem {
   }
 
   tags.push(tag);
-  if (!bypass) save();
   return tag;
 }
 
 export function getByUUID(uuid: string) {
-  if (tags.length === 0) load();
+  if (tags.length === 0) loadFile();
   return tags.find(tag => tag.basic.uuid === uuid);
 }
 
 export function toInputData() {
-  if (tags.length === 0) load();
+  if (tags.length === 0) loadFile();
   return tags.map(item => item.toInputData());
 }

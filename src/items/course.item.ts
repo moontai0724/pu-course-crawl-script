@@ -239,22 +239,22 @@ export default class CourseItem {
 
     if (this.internalValues.personIds?.length)
       inputWithRelations.hosts = {
-        connect: this.internalValues.personIds,
+        connect: this.internalValues.personIds.map(uuid => ({ uuid })),
       };
 
     if (this.internalValues.placeIds?.length)
       inputWithRelations.places = {
-        connect: this.internalValues.placeIds,
+        connect: this.internalValues.placeIds.map(uuid => ({ uuid })),
       };
 
     if (this.internalValues.tagIds?.length)
       inputWithRelations.tags = {
-        connect: this.internalValues.tagIds,
+        connect: this.internalValues.tagIds.map(uuid => ({ uuid })),
       };
 
     if (this.internalValues.timeRangeIds?.length)
       inputWithRelations.timeRanges = {
-        connect: this.internalValues.timeRangeIds,
+        connect: this.internalValues.timeRangeIds.map(id => ({ id })),
       };
 
     return inputWithRelations;

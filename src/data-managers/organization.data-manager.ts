@@ -4,12 +4,12 @@ import * as Path from "path";
 
 const organizations: OrganizationItem[] = [];
 
-function load() {
+export function loadFile() {
   if (organizations.length) return;
 
-  const path = Path.resolve(__dirname, "./cache/organizations.json");
+  const path = Path.resolve(__dirname, "../cache/organizations.json");
+  if (!FileSystem.existsSync(path)) return;
   const data = FileSystem.readFileSync(path, "utf-8");
-  if (!data) return;
 
   const parsed = JSON.parse(data) as TOrganization[];
   parsed.forEach(item => {
@@ -17,9 +17,9 @@ function load() {
   });
 }
 
-function save() {
+export function saveFile() {
   const data = organizations.map(organization => organization.getData());
-  const path = Path.resolve(__dirname, "./cache/organizations.json");
+  const path = Path.resolve(__dirname, "../cache/organizations.json");
   FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
@@ -36,7 +36,7 @@ export function add(
   organization: OrganizationItem,
   bypass = false,
 ): OrganizationItem {
-  if (!bypass && organizations.length === 0) load();
+  if (!bypass && organizations.length === 0) loadFile();
   const existing = find(organization);
   if (existing) {
     organization.setUUID(existing.basic.uuid);
@@ -44,16 +44,16 @@ export function add(
   }
 
   organizations.push(organization);
-  if (!bypass) save();
+  if (!bypass) saveFile();
   return organization;
 }
 
 export function getByUUID(uuid: string) {
-  if (organizations.length === 0) load();
+  if (organizations.length === 0) loadFile();
   return organizations.find(organization => organization.basic.uuid === uuid);
 }
 
 export function toInputData() {
-  if (organizations.length === 0) load();
+  if (organizations.length === 0) loadFile();
   return organizations.map(item => item.toInputData());
 }

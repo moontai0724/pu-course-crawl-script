@@ -4,12 +4,12 @@ import * as Path from "path";
 
 const courses: CourseItem[] = [];
 
-function load() {
+export function loadFile() {
   if (courses.length) return;
 
-  const path = Path.resolve(__dirname, "./cache/courses.json");
+  const path = Path.resolve(__dirname, "../cache/courses.json");
+  if (!FileSystem.existsSync(path)) return;
   const data = FileSystem.readFileSync(path, "utf-8");
-  if (!data) return;
 
   const parsed = JSON.parse(data) as TCourse[];
   parsed.forEach(item => {
@@ -17,9 +17,9 @@ function load() {
   });
 }
 
-function save() {
+export function saveFile() {
   const data = courses.map(course => course.getData());
-  const path = Path.resolve(__dirname, "./cache/courses.json");
+  const path = Path.resolve(__dirname, "../cache/courses.json");
   FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
@@ -28,21 +28,20 @@ function find(course: CourseItem) {
 }
 
 export function add(course: CourseItem, bypass = false): CourseItem {
-  if (!bypass && courses.length === 0) load();
+  if (!bypass && courses.length === 0) loadFile();
   const existing = find(course);
   if (existing) {
     const persons = course.internalValues.personIds ?? [];
     persons.forEach(person => existing.addPerson(person));
-    if (!bypass) save();
+    if (!bypass) saveFile();
     return existing;
   }
 
   courses.push(course);
-  save();
   return course;
 }
 
 export function toInputData() {
-  if (courses.length === 0) load();
+  if (courses.length === 0) loadFile();
   return courses.map(course => course.toInputData());
 }

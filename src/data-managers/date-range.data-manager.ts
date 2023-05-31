@@ -10,6 +10,14 @@ const dateRanges: Omit<DateRange, "id">[] = [
   },
 ];
 
-export function getInputs() {
+export function loadFile() {
+  // do nothing
+}
+
+export function saveFile() {
+  // do nothing
+}
+
+export function toInputData() {
   return dateRanges;
 }

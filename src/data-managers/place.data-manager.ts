@@ -6,12 +6,12 @@ import * as Path from "path";
 
 const places: PlaceItem[] = [];
 
-function loadCache() {
+export function loadFile() {
   if (places.length) return;
 
-  const path = Path.resolve(__dirname, "./cache/places.json");
+  const path = Path.resolve(__dirname, "../cache/places.json");
+  if (!FileSystem.existsSync(path)) return;
   const data = FileSystem.readFileSync(path, "utf-8");
-  if (!data) return;
 
   const parsed = JSON.parse(data) as TPlace[];
   parsed.forEach(item => {
@@ -19,9 +19,9 @@ function loadCache() {
   });
 }
 
-function saveCache() {
+export function saveFile() {
   const data = places.map(place => place.getData());
-  const path = Path.resolve(__dirname, "./cache/places.json");
+  const path = Path.resolve(__dirname, "../cache/places.json");
   FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
@@ -46,12 +46,12 @@ function find(place: PlaceItem) {
 }
 
 export function add(place: PlaceItem, bypass = false): PlaceItem {
-  if (!bypass && places.length === 0) loadCache();
+  if (!bypass && places.length === 0) loadFile();
   const existing = find(place);
   if (existing) return existing;
 
   places.push(place);
-  if (!bypass) saveCache();
+  if (!bypass) saveFile();
   return place;
 }
 

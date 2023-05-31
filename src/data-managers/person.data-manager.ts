@@ -4,12 +4,12 @@ import * as Path from "path";
 
 const people: PersonItem[] = [];
 
-function load() {
+export function loadFile() {
   if (people.length) return;
 
-  const path = Path.resolve(__dirname, "./cache/people.json");
+  const path = Path.resolve(__dirname, "../cache/people.json");
+  if (!FileSystem.existsSync(path)) return;
   const data = FileSystem.readFileSync(path, "utf-8");
-  if (!data) return;
 
   const parsed = JSON.parse(data) as TPerson[];
   parsed.forEach(item => {
@@ -17,9 +17,9 @@ function load() {
   });
 }
 
-function save() {
+export function saveFile() {
   const data = people.map(person => person.getData());
-  const path = Path.resolve(__dirname, "./cache/people.json");
+  const path = Path.resolve(__dirname, "../cache/people.json");
   FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
@@ -28,21 +28,20 @@ function find(person: PersonItem) {
 }
 
 export function add(person: PersonItem, bypass = false): PersonItem {
-  if (!bypass && people.length === 0) load();
+  if (!bypass && people.length === 0) loadFile();
   const existing = find(person);
   if (existing) return existing;
 
   people.push(person);
-  if (!bypass) save();
   return person;
 }
 
 export function getByUUID(uuid: string) {
-  if (people.length === 0) load();
+  if (people.length === 0) loadFile();
   return people.find(person => person.basic.uuid === uuid);
 }
 
 export function toInputData() {
-  if (people.length === 0) load();
+  if (people.length === 0) loadFile();
   return people.map(person => person.toInputData());
 }
