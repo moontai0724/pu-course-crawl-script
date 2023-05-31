@@ -1,11 +1,14 @@
 import OrganizationItem, { TOrganization } from "../items/organization.item";
+import * as FileSystem from "fs";
+import * as Path from "path";
 
 const organizations: OrganizationItem[] = [];
 
 function load() {
   if (organizations.length) return;
 
-  const data = sessionStorage.getItem("organizations");
+  const path = Path.resolve(__dirname, "./cache/organizations.json");
+  const data = FileSystem.readFileSync(path, "utf-8");
   if (!data) return;
 
   const parsed = JSON.parse(data) as TOrganization[];
@@ -16,7 +19,8 @@ function load() {
 
 function save() {
   const data = organizations.map(organization => organization.getData());
-  sessionStorage.setItem("organizations", JSON.stringify(data));
+  const path = Path.resolve(__dirname, "./cache/organizations.json");
+  FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
 function find(organization: OrganizationItem): OrganizationItem | undefined {

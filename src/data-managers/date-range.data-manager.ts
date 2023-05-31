@@ -1,4 +1,4 @@
-import { DateRange } from "_types/schema";
+import { DateRange } from "../_types/schema";
 
 const dateRanges: Omit<DateRange, "id">[] = [
   {

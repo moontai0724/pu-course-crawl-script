@@ -1,11 +1,14 @@
 import TagItem, { TTag } from "../items/tag.item";
+import * as FileSystem from "fs";
+import * as Path from "path";
 
 const tags: TagItem[] = [];
 
 function load() {
   if (tags.length) return;
 
-  const data = sessionStorage.getItem("tags");
+  const path = Path.resolve(__dirname, "./cache/tags.json");
+  const data = FileSystem.readFileSync(path, "utf-8");
   if (!data) return;
 
   const parsed = JSON.parse(data) as TTag[];
@@ -16,7 +19,8 @@ function load() {
 
 function save() {
   const data = tags.map(tag => tag.getData());
-  sessionStorage.setItem("tags", JSON.stringify(data));
+  const path = Path.resolve(__dirname, "./cache/tags.json");
+  FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
 function find(tag: TagItem): TagItem | undefined {

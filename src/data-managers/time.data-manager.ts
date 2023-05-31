@@ -1,12 +1,16 @@
+import { Cheerio, Element } from "cheerio";
 import TimeRangeItem, { TTimeRange } from "../items/time-range.item";
 import WeekdayTimePlaceParser from "../utils/weekday-time-place-parser";
+import * as FileSystem from "fs";
+import * as Path from "path";
 
 const times: TimeRangeItem[] = [];
 
-function load() {
+function loadCache() {
   if (times.length) return;
 
-  const data = sessionStorage.getItem("times");
+  const path = Path.resolve(__dirname, "./cache/times.json");
+  const data = FileSystem.readFileSync(path, "utf-8");
   if (!data) return;
 
   const parsed = JSON.parse(data) as TTimeRange[];
@@ -16,17 +20,18 @@ function load() {
   });
 }
 
-function save() {
+function saveCache() {
   const data = times.map(time => time.getData());
-  sessionStorage.setItem("times", JSON.stringify(data));
+  const path = Path.resolve(__dirname, "./cache/times.json");
+  FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
-export function parse(tdElement?: Element | null): TimeRangeItem[] {
+export function parse(tdElement?: Cheerio<Element> | null): TimeRangeItem[] {
   if (!tdElement) return [];
 
   const parsed: TimeRangeItem[] = [];
 
-  const text = (tdElement as HTMLElement).innerText?.trim() || "";
+  const text = tdElement.text().trim() || "";
   const wtps = WeekdayTimePlaceParser.parseAll(text);
 
   wtps.forEach(wtp => {
@@ -44,16 +49,16 @@ function find(time: TimeRangeItem) {
 }
 
 export function add(time: TimeRangeItem): TimeRangeItem {
-  if (times.length === 0) load();
+  if (times.length === 0) loadCache();
   const existing = find(time);
   if (existing && existing.basic.id) return existing;
 
   times.push(time);
-  save();
+  saveCache();
   return time;
 }
 
 export function toInputData() {
-  if (times.length === 0) load();
+  if (times.length === 0) loadCache();
   return times.map(time => time.toInputData());
 }

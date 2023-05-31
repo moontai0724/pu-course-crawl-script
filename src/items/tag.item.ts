@@ -1,4 +1,5 @@
-import { Tag } from "_types/schema";
+import { Tag } from "../_types/schema";
+import * as crypto from "crypto";
 
 export type TTagBasic = Omit<Tag, "id">;
 export type TTag = TTagBasic;

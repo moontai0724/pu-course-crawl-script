@@ -1,4 +1,6 @@
-import { Organization } from "_types/schema";
+import { Organization } from "../_types/schema";
+import { Cheerio, Element } from "cheerio";
+import * as crypto from "crypto";
 
 export type TOrganizationBasic = Omit<Organization, "id" | "parentId">;
 export type TOrganization = TOrganizationBasic;
@@ -6,14 +8,14 @@ export type TOrganization = TOrganizationBasic;
 export default class OrganizationItem {
   basic: TOrganizationBasic;
 
-  constructor(aElement: Element);
+  constructor(aElement: Cheerio<Element>);
   constructor(rawData: TOrganization);
-  constructor(input: Element & TOrganization) {
-    if (input instanceof Element) {
+  constructor(input: Cheerio<Element> & TOrganization) {
+    if (input.uuid) {
+      this.basic = input as TOrganizationBasic;
+    } else {
       this.basic = this.parseBasic(input);
       this.setUUID(this.basic.uuid);
-    } else {
-      this.basic = input as TOrganizationBasic;
     }
   }
 
@@ -25,10 +27,10 @@ export default class OrganizationItem {
     this.basic.uuid = uuid;
   }
 
-  private parseBasic(element: Element): TOrganizationBasic {
+  private parseBasic(element: Cheerio<Element>): TOrganizationBasic {
     const basic: TOrganizationBasic = {
       uuid: crypto.randomUUID(),
-      name: element.textContent?.trim() ?? "",
+      name: element.text().trim() ?? "",
       description: null,
     };
 

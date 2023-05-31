@@ -1,12 +1,16 @@
+import { Cheerio, Element } from "cheerio";
 import PlaceItem, { TPlace } from "../items/place.item";
 import weekdayTimePlaceParser from "../utils/weekday-time-place-parser";
+import * as FileSystem from "fs";
+import * as Path from "path";
 
 const places: PlaceItem[] = [];
 
-function load() {
+function loadCache() {
   if (places.length) return;
 
-  const data = sessionStorage.getItem("places");
+  const path = Path.resolve(__dirname, "./cache/places.json");
+  const data = FileSystem.readFileSync(path, "utf-8");
   if (!data) return;
 
   const parsed = JSON.parse(data) as TPlace[];
@@ -15,17 +19,18 @@ function load() {
   });
 }
 
-function save() {
+function saveCache() {
   const data = places.map(place => place.getData());
-  sessionStorage.setItem("places", JSON.stringify(data));
+  const path = Path.resolve(__dirname, "./cache/places.json");
+  FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
-export function parse(tdElement?: Element | null): PlaceItem[] {
+export function parse(tdElement?: Cheerio<Element> | null): PlaceItem[] {
   if (!tdElement) return [];
 
   const places: PlaceItem[] = [];
 
-  const text = (tdElement as HTMLElement).innerText || "";
+  const text = tdElement.text() || "";
   const placeTexts = weekdayTimePlaceParser.getPlaces(text);
 
   placeTexts.forEach(placeText => {
@@ -41,12 +46,12 @@ function find(place: PlaceItem) {
 }
 
 export function add(place: PlaceItem, bypass = false): PlaceItem {
-  if (!bypass && places.length === 0) load();
+  if (!bypass && places.length === 0) loadCache();
   const existing = find(place);
   if (existing) return existing;
 
   places.push(place);
-  if (!bypass) save();
+  if (!bypass) saveCache();
   return place;
 }
 

@@ -1,16 +1,18 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
     "allowJs": true,
     "baseUrl": "src/",
-    "module": "es6",
+    "module": "UMD",
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "outDir": "./dist/",
+    "outDir": "dist",
     "sourceMap": true,
     "strict": true,
-    "lib": ["DOM", "es2019"],
+    "lib": ["es6"],
     "target": "es6"
   },
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"],
   "typeAcquisition": {
     "enable": true

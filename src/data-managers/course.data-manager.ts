@@ -1,11 +1,14 @@
 import CourseItem, { TCourse } from "../items/course.item";
+import * as FileSystem from "fs";
+import * as Path from "path";
 
 const courses: CourseItem[] = [];
 
 function load() {
   if (courses.length) return;
 
-  const data = sessionStorage.getItem("courses");
+  const path = Path.resolve(__dirname, "./cache/courses.json");
+  const data = FileSystem.readFileSync(path, "utf-8");
   if (!data) return;
 
   const parsed = JSON.parse(data) as TCourse[];
@@ -16,7 +19,8 @@ function load() {
 
 function save() {
   const data = courses.map(course => course.getData());
-  sessionStorage.setItem("courses", JSON.stringify(data));
+  const path = Path.resolve(__dirname, "./cache/courses.json");
+  FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
 function find(course: CourseItem) {

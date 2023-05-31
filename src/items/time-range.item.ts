@@ -1,4 +1,4 @@
-import { TimeRange } from "_types/schema";
+import { TimeRange } from "../_types/schema";
 import { WeekdayTimePlace } from "../utils/weekday-time-place-parser";
 
 export type TTimeRangeBasic = Omit<

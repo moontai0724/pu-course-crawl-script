@@ -1,4 +1,4 @@
-import { Course } from "_types/schema";
+import { Course } from "../_types/schema";
 import personParser from "../utils/person-parser";
 import PersonItem from "./person.item";
 import OrganizationItem from "./organization.item";
@@ -11,6 +11,8 @@ import {
 } from "../data-managers";
 import TimeRangeItem from "./time-range.item";
 import TagItem from "./tag.item";
+import { load, Cheerio, Element } from "cheerio";
+import * as crypto from "crypto";
 
 export type TCourseBasic = Omit<
   Course,
@@ -36,13 +38,13 @@ export default class CourseItem {
   constructor(trElement: Element);
   constructor(rawData: TCourse);
   constructor(input: Element & TCourse) {
-    if (input instanceof Element) {
-      this.basic = this.parseBasic(input);
-      this.setUUID(this.basic.uuid);
-    } else {
+    if (input.uuid) {
       const { internalValues, ...basic } = input as TCourse;
       this.basic = basic;
       this.internalValues = internalValues;
+    } else {
+      this.basic = this.parseBasic(load(input).fn);
+      this.setUUID(this.basic.uuid);
     }
   }
 
@@ -91,7 +93,7 @@ export default class CourseItem {
     this.basic.uuid = uuid;
   }
 
-  private parseBasic(element: Element): TCourseBasic {
+  private parseBasic(element: Cheerio<Element>): TCourseBasic {
     // eslint-disable-next-line prefer-const
     let course: TCourseBasic = {
       uuid: crypto.randomUUID(),
@@ -140,85 +142,81 @@ export default class CourseItem {
     return identicalValues.join(" ");
   }
 
-  private parseCode(element: Element): string {
-    const target = element.querySelector("td:nth-child(1)");
-    return target?.textContent?.trim() ?? "";
+  private parseCode(element: Cheerio<Element>): string {
+    const target = element.find("td:nth-child(1)");
+    return target.text().trim() ?? "";
   }
 
-  private parseOrganization(element: Element): OrganizationItem | null {
-    const target = element.querySelector("td:nth-child(2)");
+  private parseOrganization(
+    element: Cheerio<Element>,
+  ): OrganizationItem | null {
+    const target = element.find("td:nth-child(2)");
     if (!target) return null;
 
     return OrganizationDataManager.add(new OrganizationItem(target));
   }
 
-  private parseType(element: Element): TagItem | null {
+  private parseType(element: Cheerio<Element>): TagItem | null {
     const name = this.parseTypeName(element);
     if (!name) return null;
     return TagDataManager.add(new TagItem(name));
   }
 
-  private parseTypeName(element: Element): string | null {
-    const target = element.querySelector("td:nth-child(3)");
-    return target?.textContent?.trim() || null;
+  private parseTypeName(element: Cheerio<Element>): string | null {
+    const target = element.find("td:nth-child(3)");
+    return target.text().trim() || null;
   }
 
-  private parseName(element: Element): {
+  private parseName(element: Cheerio<Element>): {
     chinese: string;
     english: string | null;
     link: string | null;
   } {
-    const target = element.querySelector("td:nth-child(4)");
+    const target = element.find("td:nth-child(4)");
     if (!target) {
       console.error("Cannot find title element in: ", element);
       throw new Error("Cannot find title element");
     }
 
-    const linkElement = target?.querySelector("a");
+    const linkElement = target?.find("a");
     if (!linkElement) {
       return {
-        chinese: target?.textContent?.trim() ?? "",
+        chinese: target.text().trim() ?? "",
         english: null,
         link: null,
       };
     }
 
-    const chinese = linkElement.textContent?.trim() ?? "";
-    const english =
-      Array.from(target.childNodes).pop()?.textContent?.trim() ?? null;
-    const link = linkElement.getAttribute("href") ?? null;
+    const chinese = linkElement.text().trim() ?? "";
+    const english = target.children().last().text().trim() ?? null;
+    const link = linkElement.attr("href") ?? null;
 
     return { chinese, english, link };
   }
 
-  private parseCredit(element: Element): number {
-    const target = element.querySelector("td:nth-child(6)");
-    return parseInt(target?.textContent?.trim() || "0", 10);
+  private parseCredit(element: Cheerio<Element>): number {
+    const target = element.find("td:nth-child(6)");
+    return parseInt(target.text().trim() || "0", 10);
   }
 
-  public getPersonElements(element: Element): HTMLAnchorElement[] {
-    const elements = element.querySelectorAll("td:nth-child(7) a");
-    return Array.from(elements) as HTMLAnchorElement[];
-  }
-
-  private parsePerson(element: Element): PersonItem[] {
-    const target = element.querySelector("td:nth-child(7)");
+  private parsePerson(element: Cheerio<Element>): PersonItem[] {
+    const target = element.find("td:nth-child(7)");
     return personParser.parseAll(target);
   }
 
-  private parseTimeRanges(element: Element): TimeRangeItem[] {
-    const target = element.querySelector("td:nth-child(8)");
+  private parseTimeRanges(element: Cheerio<Element>): TimeRangeItem[] {
+    const target = element.find("td:nth-child(8)");
     return TimeDataManager.parse(target);
   }
 
-  private parsePlaces(element: Element): PlaceItem[] {
-    const target = element.querySelector("td:nth-child(8)");
+  private parsePlaces(element: Cheerio<Element>): PlaceItem[] {
+    const target = element.find("td:nth-child(8)");
     return PlaceDataManager.parse(target);
   }
 
-  private parseNote(element: Element): string | null {
-    const target = element.querySelector("td:nth-child(9)");
-    return target?.textContent?.trim() || null;
+  private parseNote(element: Cheerio<Element>): string | null {
+    const target = element.find("td:nth-child(9)");
+    return target.text().trim() || null;
   }
 
   public toInputData() {

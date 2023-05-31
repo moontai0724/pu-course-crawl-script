@@ -1,11 +1,14 @@
 import PersonItem, { TPerson } from "../items/person.item";
+import * as FileSystem from "fs";
+import * as Path from "path";
 
 const people: PersonItem[] = [];
 
 function load() {
   if (people.length) return;
 
-  const data = sessionStorage.getItem("people");
+  const path = Path.resolve(__dirname, "./cache/people.json");
+  const data = FileSystem.readFileSync(path, "utf-8");
   if (!data) return;
 
   const parsed = JSON.parse(data) as TPerson[];
@@ -16,7 +19,8 @@ function load() {
 
 function save() {
   const data = people.map(person => person.getData());
-  sessionStorage.setItem("people", JSON.stringify(data));
+  const path = Path.resolve(__dirname, "./cache/people.json");
+  FileSystem.writeFileSync(path, JSON.stringify(data));
 }
 
 function find(person: PersonItem) {
