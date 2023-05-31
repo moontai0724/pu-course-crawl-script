@@ -70,16 +70,6 @@ export default class CourseItem {
 
   public getData(): TCourse {
     const internalValues: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(this.internalValues)) {
-      if (value instanceof Array) {
-        internalValues[key] = value.map(({ element, ...item }) => item);
-      } else if (value instanceof Object) {
-        const { element, ...item } = value;
-        internalValues[key] = item;
-      } else {
-        internalValues[key] = value;
-      }
-    }
 
     const data: TCourse = {
       ...this.basic,
