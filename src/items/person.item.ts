@@ -1,6 +1,6 @@
 import { Person } from "../_types/schema";
-import { load } from "cheerio";
-import { Cheerio, Element } from "cheerio";
+import { CheerioAPI, load } from "cheerio";
+import { Element } from "cheerio";
 import * as crypto from "crypto";
 
 export type TPersonBasic = Omit<Person, "id">;
@@ -24,7 +24,7 @@ export default class PersonItem {
       this.basic = basic;
       this.intervalValues = internalValues;
     } else {
-      this.basic = this.parseBasic(load(input).fn);
+      this.basic = this.parseBasic(load(input));
       this.setUUID(this.basic.uuid);
     }
   }
@@ -43,15 +43,17 @@ export default class PersonItem {
     // this.element?.setAttribute("data-uuid", uuid);
   }
 
-  private parseBasic(element: Cheerio<Element>): TPersonBasic {
+  private parseBasic(element: CheerioAPI): TPersonBasic {
     // eslint-disable-next-line prefer-const
     let course: TPersonBasic = {
       uuid: crypto.randomUUID(),
       name: element.text().trim() ?? "",
       description: null,
       link:
-        element.attr("href")?.replace("../", "https://alcat.pu.edu.tw/") ||
-        null,
+        element
+          .root()
+          .attr("href")
+          ?.replace("../", "https://alcat.pu.edu.tw/") || null,
     };
 
     this.intervalValues.personId = course.link?.split("?").pop();

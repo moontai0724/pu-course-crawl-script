@@ -1,5 +1,6 @@
 import { Organization } from "../_types/schema";
-import { Cheerio, Element } from "cheerio";
+import { Cheerio } from "cheerio";
+import { Element } from "cheerio";
 import * as crypto from "crypto";
 
 export type TOrganizationBasic = Omit<Organization, "id" | "parentId">;

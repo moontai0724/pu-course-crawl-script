@@ -61,7 +61,8 @@ async function main() {
   if (tag) TagDataManager.add(tag);
 
   const courseElements = $("table tr");
-  Array.from(courseElements)
+  courseElements
+    .toArray()
     .slice(1)
     .forEach(courseElement => {
       const course = new CourseItem(courseElement);

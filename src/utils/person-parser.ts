@@ -1,6 +1,8 @@
 import { Cheerio, Element } from "cheerio";
 import { PersonDataManager } from "../data-managers";
 import PersonItem, { TPerson } from "../items/person.item";
+import { load } from "cheerio";
+import * as crypto from "crypto";
 
 export default { parseAll };
 

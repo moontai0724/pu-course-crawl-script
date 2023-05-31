@@ -11,7 +11,7 @@ import {
 } from "../data-managers";
 import TimeRangeItem from "./time-range.item";
 import TagItem from "./tag.item";
-import { load, Cheerio, Element } from "cheerio";
+import { load, Element, CheerioAPI } from "cheerio";
 import * as crypto from "crypto";
 
 export type TCourseBasic = Omit<
@@ -43,7 +43,7 @@ export default class CourseItem {
       this.basic = basic;
       this.internalValues = internalValues;
     } else {
-      this.basic = this.parseBasic(load(input).fn);
+      this.basic = this.parseBasic(load(input));
       this.setUUID(this.basic.uuid);
     }
   }
@@ -93,7 +93,7 @@ export default class CourseItem {
     this.basic.uuid = uuid;
   }
 
-  private parseBasic(element: Cheerio<Element>): TCourseBasic {
+  private parseBasic(element: CheerioAPI): TCourseBasic {
     // eslint-disable-next-line prefer-const
     let course: TCourseBasic = {
       uuid: crypto.randomUUID(),
@@ -142,39 +142,37 @@ export default class CourseItem {
     return identicalValues.join(" ");
   }
 
-  private parseCode(element: Cheerio<Element>): string {
-    const target = element.find("td:nth-child(1)");
+  private parseCode($: CheerioAPI): string {
+    const target = $("td:nth-child(1)");
     return target.text().trim() ?? "";
   }
 
-  private parseOrganization(
-    element: Cheerio<Element>,
-  ): OrganizationItem | null {
-    const target = element.find("td:nth-child(2)");
+  private parseOrganization($: CheerioAPI): OrganizationItem | null {
+    const target = $("td:nth-child(2)");
     if (!target) return null;
 
     return OrganizationDataManager.add(new OrganizationItem(target));
   }
 
-  private parseType(element: Cheerio<Element>): TagItem | null {
-    const name = this.parseTypeName(element);
+  private parseType($: CheerioAPI): TagItem | null {
+    const name = this.parseTypeName($);
     if (!name) return null;
     return TagDataManager.add(new TagItem(name));
   }
 
-  private parseTypeName(element: Cheerio<Element>): string | null {
-    const target = element.find("td:nth-child(3)");
+  private parseTypeName($: CheerioAPI): string | null {
+    const target = $("td:nth-child(3)");
     return target.text().trim() || null;
   }
 
-  private parseName(element: Cheerio<Element>): {
+  private parseName($: CheerioAPI): {
     chinese: string;
     english: string | null;
     link: string | null;
   } {
-    const target = element.find("td:nth-child(4)");
+    const target = $("td:nth-child(4)");
     if (!target) {
-      console.error("Cannot find title element in: ", element);
+      console.error("Cannot find title element in: ", $);
       throw new Error("Cannot find title element");
     }
 
@@ -194,28 +192,28 @@ export default class CourseItem {
     return { chinese, english, link };
   }
 
-  private parseCredit(element: Cheerio<Element>): number {
-    const target = element.find("td:nth-child(6)");
+  private parseCredit($: CheerioAPI): number {
+    const target = $("td:nth-child(6)");
     return parseInt(target.text().trim() || "0", 10);
   }
 
-  private parsePerson(element: Cheerio<Element>): PersonItem[] {
-    const target = element.find("td:nth-child(7)");
+  private parsePerson($: CheerioAPI): PersonItem[] {
+    const target = $("td:nth-child(7)");
     return personParser.parseAll(target);
   }
 
-  private parseTimeRanges(element: Cheerio<Element>): TimeRangeItem[] {
-    const target = element.find("td:nth-child(8)");
+  private parseTimeRanges($: CheerioAPI): TimeRangeItem[] {
+    const target = $("td:nth-child(8)");
     return TimeDataManager.parse(target);
   }
 
-  private parsePlaces(element: Cheerio<Element>): PlaceItem[] {
-    const target = element.find("td:nth-child(8)");
+  private parsePlaces($: CheerioAPI): PlaceItem[] {
+    const target = $("td:nth-child(8)");
     return PlaceDataManager.parse(target);
   }
 
-  private parseNote(element: Cheerio<Element>): string | null {
-    const target = element.find("td:nth-child(9)");
+  private parseNote($: CheerioAPI): string | null {
+    const target = $("td:nth-child(9)");
     return target.text().trim() || null;
   }
 
