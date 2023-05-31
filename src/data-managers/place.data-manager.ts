@@ -30,7 +30,7 @@ export function parse(tdElement?: Cheerio<Element> | null): PlaceItem[] {
 
   const places: PlaceItem[] = [];
 
-  const text = tdElement.text() || "";
+  const text = tdElement.html() || "";
   const placeTexts = weekdayTimePlaceParser.getPlaces(text);
 
   placeTexts.forEach(placeText => {

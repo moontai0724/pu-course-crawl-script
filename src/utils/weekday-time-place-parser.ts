@@ -14,7 +14,7 @@ export interface TimePeriod {
 export default { parseAll, getPlaces };
 
 export function parseAll(input: string): WeekdayTimePlace[] {
-  const days = input.split("\n");
+  const days = input.split("<br>");
 
   return days.map(parseDay).flat();
 }
@@ -22,7 +22,11 @@ export function parseAll(input: string): WeekdayTimePlace[] {
 export function parseDay(input: string): WeekdayTimePlace[] {
   const chineseWeekday = input.substring(0, 1);
 
-  const timeAndPlaces = input.substring(1).trim().split(";");
+  const timeAndPlaces = input
+    .substring(1)
+    .trim()
+    // eslint-disable-next-line no-irregular-whitespace
+    .split(/[;；　]/);
   const timePlaces = timeAndPlaces.map(parseTimeAndPlace).flat();
 
   return timePlaces.map(timePlace => ({
